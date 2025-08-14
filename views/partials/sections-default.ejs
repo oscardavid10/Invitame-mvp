@@ -1,0 +1,27 @@
+<script>
+ async function sendRSVP(e){
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
+  const body = Object.fromEntries(fd.entries())
+  const res = await fetch(form.action, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)})
+  const out = await res.json();
+  document.getElementById('estado').textContent = out.ok ? '¡Gracias! Te hemos registrado.' : (out.error||'Error')
+  if(out.ok) form.reset();
+ }
+ function sendWhats(){
+  const f = document.querySelector('#rsvp form');
+  const d = Object.fromEntries(new FormData(f).entries());
+  const lines = [
+    `*RSVP — <%= data.title %>*`,
+    `Nombre: ${d.name||''}`,
+    `Email: ${d.email||''}`,
+    `Teléfono: ${d.phone||''}`,
+    `Acompañantes: ${d.guests||0}`,
+    d.message?`Mensaje: ${d.message}`:''
+  ].filter(Boolean).join('\n');
+  const msg = encodeURIComponent(lines)
+  const phone = '<%= (data.whatsapp_phone||"").replace(/[^+\\d]/g,"") %>'
+  window.open(`https://wa.me/${phone}?text=${msg}`,'_blank')
+ }
+</script>

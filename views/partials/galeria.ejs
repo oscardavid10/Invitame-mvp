@@ -1,0 +1,10 @@
+<section class="py-12">
+  <div class="container mx-auto px-5">
+    <h3 class="font-display text-2xl mb-4">Galería</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <% (theme.media.gallery||[]).forEach(src=>{ %>
+        <img class="rounded-2xl aspect-[4/5] object-cover ring-1 ring-white/10" src="<%= src %>" alt="" />
+      <% }) %>
+    </div>
+  </div>
+</section>

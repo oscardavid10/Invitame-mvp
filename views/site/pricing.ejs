@@ -1,0 +1,19 @@
+<section class="container mx-auto px-5 py-12">
+  <h1 class="text-3xl font-bold mb-6">Elige tu plan</h1>
+  <div class="grid md:grid-cols-3 gap-6">
+    <% plans.forEach(p => { %>
+      <div class="card">
+        <h3 class="text-xl font-semibold"><%= p.name %></h3>
+        <p class="text-3xl font-bold my-2">$<%= p.price_mxn %> MXN</p>
+        <ul class="text-sm space-y-1 mt-3">
+          <li>Plantillas: <%= p.template_scope === 'general' ? 'General' : p.template_scope === 'all' ? 'Todas' : 'Premium' %></li>
+          <li>Imágenes en galería: <%= p.max_images %></li>
+          <li>Video: <%= p.allow_video ? 'Sí' : 'No' %></li>
+          <li>Transiciones: <%= p.allow_transitions ? 'Sí' : 'No' %></li>
+          <li>Almacenamiento: <%= p.storage_mb %> MB</li>
+        </ul>
+        <a class="btn btn-primary mt-4 block text-center" href="/site/crear?plan=<%= p.code %>">Elegir y crear</a>
+      </div>
+    <% }) %>
+  </div>
+</section>

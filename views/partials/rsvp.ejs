@@ -1,0 +1,21 @@
+<section id="rsvp" class="py-12 bg-grid/30">
+  <div class="container mx-auto px-5">
+    <div class="max-w-2xl mx-auto card">
+      <h3 class="font-display text-2xl">Confirmar asistencia</h3>
+      <form class="mt-6 grid gap-4 md:grid-cols-2" method="post" action="/api/<%= data.slug %>/rsvp" onsubmit="return sendRSVP(event)">
+        <input class="rounded-xl bg-black/30 ring-1 ring-white/10 px-4 py-3" name="name" placeholder="Nombre" required />
+        <input class="rounded-xl bg-black/30 ring-1 ring-white/10 px-4 py-3" name="email" type="email" placeholder="Correo" required />
+        <input class="rounded-xl bg-black/30 ring-1 ring-white/10 px-4 py-3" name="phone" placeholder="WhatsApp" />
+        <input class="rounded-xl bg-black/30 ring-1 ring-white/10 px-4 py-3" name="guests" type="number" min="0" value="0" placeholder="Acompañantes" />
+        <textarea class="md:col-span-2 rounded-xl bg-black/30 ring-1 ring-white/10 px-4 py-3" name="message" rows="3" placeholder="Mensaje"></textarea>
+        <div class="md:col-span-2 flex gap-3">
+          <button class="btn btn-primary" type="submit">Enviar</button>
+          <% if (data.whatsapp_phone){ %>
+          <button class="btn btn-ghost" type="button" onclick="sendWhats()">Confirmar por WhatsApp</button>
+          <% } %>
+        </div>
+        <p id="estado" class="md:col-span-2 text-sm text-[var(--muted)]"></p>
+      </form>
+    </div>
+  </div>
+</section>

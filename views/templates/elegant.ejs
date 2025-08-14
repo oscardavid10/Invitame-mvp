@@ -1,0 +1,7 @@
+<main>
+  <% 
+    const order = (data.section_order ? JSON.parse(data.section_order) : ["hero","detalles","mensaje","galeria","ubicacion","rsvp","footer"]);
+    for (const key of order) { %>
+      <%- include(`../partials/${key}`, { data, theme }) %>
+  <% } %>
+</main>

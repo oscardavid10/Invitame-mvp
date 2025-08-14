@@ -1,0 +1,50 @@
+<%
+  const H = theme?.hero || {};
+  const mode = (H.mode || 'video'); // 'video' | 'image' | 'none'
+  const overlay = H.overlay || 'rgba(0,0,0,.45)';
+%>
+
+<% if (mode === 'video') { %>
+<header class="relative min-h-[75svh] grid place-items-center overflow-clip">
+  <video class="absolute inset-0 h-full w-full object-cover" autoplay muted playsinline loop
+         poster="<%= theme.media?.poster || '/public/img/placeholder.jpg' %>">
+    <source src="<%= theme.media?.video || '/public/video/sample.mp4' %>" type="video/mp4" />
+  </video>
+  <div class="absolute inset-0" style="background:<%= overlay %>"></div>
+  <div class="relative container mx-auto px-5">
+    <div class="max-w-3xl mx-auto card text-center">
+      <p class="uppercase tracking-[.35em] text-[var(--muted)] text-xs">Te invitamos a</p>
+      <h1 class="font-display text-4xl md:text-6xl leading-tight mt-2"><%= data.title %></h1>
+      <p class="mt-4 text-[var(--ring)]">
+        <%= new Date(data.date_iso).toLocaleString('es-MX',{dateStyle:'full', timeStyle:'short'}) %>
+        • <%= data.venue %>
+      </p>
+      <div class="mt-6"><a href="#rsvp" class="btn btn-primary">Confirmar asistencia</a></div>
+    </div>
+  </div>
+</header>
+<% } else if (mode === 'image') { %>
+<header class="relative min-h-[75svh] grid place-items-center overflow-clip"
+        style="background-image:url('<%= theme.media?.poster || '' %>'); background-size:cover; background-position:center;">
+  <div class="absolute inset-0" style="background:<%= overlay %>"></div>
+  <div class="relative container mx-auto px-5">
+    <div class="max-w-3xl mx-auto card text-center">
+      <h1 class="font-display text-4xl md:text-6xl leading-tight mt-2"><%= data.title %></h1>
+      <p class="mt-4 text-[var(--ring)]">
+        <%= new Date(data.date_iso).toLocaleString('es-MX',{dateStyle:'full', timeStyle:'short'}) %>
+        • <%= data.venue %>
+      </p>
+    </div>
+  </div>
+</header>
+<% } else { %>
+<!-- mode: none → deja ver el fondo global (papel, patrones, etc.) -->
+<header class="relative min-h-[75svh] grid place-items-center">
+  <div class="relative text-center px-6 w-full">
+    <div class="max-w-3xl mx-auto">
+      <h1 class="title text-4xl md:text-5xl font-display font-bold"><%= data.title %></h1>
+      <p class="mt-2 opacity-90 max-w-prose mx-auto"><%= theme.copy?.intro || 'Reserva la fecha y acompáñanos' %></p>
+    </div>
+  </div>
+</header>
+<% } %>

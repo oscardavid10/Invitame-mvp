@@ -1,0 +1,18 @@
+<!-- Variante con tipografía más grande y énfasis en el hero -->
+<header class="relative min-h-[85svh] grid place-items-center overflow-clip">
+  <video class="absolute inset-0 h-full w-full object-cover" autoplay muted playsinline loop poster="<%= theme.media.poster %>">
+    <source src="<%= theme.media.video %>" type="video/mp4" />
+  </video>
+  <div class="absolute inset-0 bg-black/40"></div>
+  <div class="relative container mx-auto px-5">
+    <div class="max-w-4xl mx-auto glass rounded-3xl p-10 md:p-16 text-center">
+      <h1 class="font-display text-5xl md:text-7xl leading-tight"><%= data.title %></h1>
+      <p class="mt-4 text-lg text-[var(--ring)]"><%= new Date(data.date_iso).toLocaleString('es-MX',{dateStyle:'full', timeStyle:'short'}) %> • <%= data.venue %></p>
+      <div class="mt-8">
+        <a href="#rsvp" class="btn btn-primary">Confirmar asistencia</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<%- include('partials/sections-default', { data, theme }) %>

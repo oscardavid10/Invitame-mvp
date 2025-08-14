@@ -1,0 +1,25 @@
+<%
+  const raw = (theme && theme.meta && theme.meta.registry) ? String(theme.meta.registry) : '';
+  const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+%>
+<% if (lines.length) { %>
+<section class="py-12">
+  <div class="container mx-auto px-5 max-w-3xl">
+    <h3 class="font-display text-2xl mb-4">Mesa de regalos</h3>
+    <div class="grid gap-3">
+      <% lines.forEach((ln) => {
+           const isUrl = /^https?:\/\//i.test(ln);
+           const label = isUrl ? ln.replace(/^https?:\/\/(www\.)?/i,'').replace(/\/.*/,'') : '';
+      %>
+        <% if (isUrl) { %>
+          <a class="btn" href="<%= ln %>" target="_blank" rel="noopener">
+            Abrir: <%= label %>
+          </a>
+        <% } else { %>
+          <div class="card"><%= ln %></div>
+        <% } %>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>

@@ -1,0 +1,15 @@
+<%
+  const url = theme?.meta?.music_url || '';
+  const autoplay = !!theme?.meta?.music_autoplay;
+%>
+<% if (url) { %>
+<section class="py-12">
+  <div class="container mx-auto px-5 max-w-3xl text-center">
+    <h3 class="font-display text-2xl mb-4">Música</h3>
+    <audio src="<%= url %>" controls <%= autoplay ? 'autoplay muted' : '' %>></audio>
+    <% if (autoplay) { %>
+      <p class="text-xs text-[var(--ring)] mt-2">Si no se reproduce automáticamente, presiona play.</p>
+    <% } %>
+  </div>
+</section>
+<% } %>

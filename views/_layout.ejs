@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= typeof title !== 'undefined' ? title : 'Invítame' %></title>
+
+  <!-- CSS compilado -->
+  <link rel="stylesheet" href="/public/css/app.css?v=20250812b">
+
+  <!-- Fuentes (las usas en demos; el theme decide cuál aplicar vía vars) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Playfair+Display:wght@400;600;700&family=Work+Sans:wght@300;400;600&family=Cormorant+Garamond:wght@400;600&display=swap"
+    rel="stylesheet">
+
+  <% 
+    // Fallbacks defensivos
+    const T = (typeof theme !== 'undefined' && theme) ? theme : {};
+    const C = T.colors || {};
+    const F = T.fonts  || {};
+    const M = T.media  || {};
+    const tplKey = (typeof data !== 'undefined' && data.template_key)
+      ? data.template_key
+      : (typeof tpl !== 'undefined' ? tpl : 'default');
+  %>
+
+  <style>
+    :root{
+      /* Colores (tokens) */
+      --bg:    <%= C.bg    || '#0e0e1a' %>;
+      --text:  <%= C.text  || '#f5f4f7' %>;
+      --accent:<%= C.accent|| '#4c3b33' %>;
+      --muted: <%= C.muted || '#b5b1aa' %>;
+      --ring:  <%= C.ring  || '#cdcbc9' %>;
+
+      /* Tipografías */
+      --font-display: "<%= F.display || 'Inter' %>";
+      --font-body:    "<%= F.body    || 'Inter' %>";
+
+      /* Fondo global por plantilla */
+      --bg-img: <%- M.bg ? `url("${M.bg}")` : 'none' %>;
+      --bg-size: <%- M.bg_size || 'cover' %>;
+      --bg-pos: <%- M.bg_pos || 'center' %>;
+      --bg-repeat: <%- M.bg_repeat || 'no-repeat' %>;
+      --bg-attach: <%- M.bg_attach || 'scroll' %>;
+      --bg-overlay: <%- M.overlay ? M.overlay : 'none' %>;
+    }
+
+    html, body { height: 100%; }
+    body{
+      color: var(--text);
+      margin: 0;
+      font-family: var(--font-body), system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+
+      /* 🔥 fondo global aplicado SIEMPRE (imagen + overlay) */
+      background-color: var(--bg);
+      background-image: var(--bg-overlay), var(--bg-img);
+      background-size: var(--bg-size);
+      background-position: var(--bg-pos);
+      background-repeat: var(--bg-repeat);
+      background-attachment: var(--bg-attach);
+    }
+
+    h1,h2,.font-display{
+      font-family: var(--font-display), Georgia, 'Times New Roman', serif;
+    }
+
+    .btn{ display:inline-block; padding:.6rem 1rem; border:1px solid var(--ring); border-radius:.75rem }
+    .btn-primary{ background: var(--accent); color:#fff; }
+    .card{ background: rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:1rem; padding:1rem }
+
+    /* default */
+    .tpl-default .card{ backdrop-filter: none }
+    .tpl-default h1{ letter-spacing:.005em }
+
+    /* elegant */
+    .tpl-elegant .card{ backdrop-filter: blur(6px); border-color: rgba(255,255,255,.18) }
+    .tpl-elegant header .card{ background: rgba(0,0,0,.35) }
+    .tpl-elegant h1{ letter-spacing:.02em; text-transform:none }
+
+    /* fairytale */
+    .tpl-fairytale .card{ background: rgba(255,245,235,.06); border-color: rgba(230,212,184,.35) }
+    .tpl-fairytale .btn-primary{ background: linear-gradient(180deg,#e6d4b8,#c7a97b); color:#3a2a19; border-color:#e6d4b8 }
+    .tpl-fairytale header .title{ letter-spacing:.04em; text-shadow:0 1px 0 rgba(0,0,0,.4) }
+  </style>
+</head>
+<body class="tpl-<%= tplKey %>">
+  <%- body %>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<section class="container mx-auto px-5 py-10 grid gap-6">
+  <div class="card">
+    <h3 class="text-lg font-bold mb-3">1) Plantilla</h3>
+    <div class="flex gap-2 mb-3">
+      <% cats.forEach(c=>{ %>
+        <a href="#cat-<%= c %>" class="btn btn-ghost"><%= c %></a>
+      <% }) %>
+    </div>
+    <% cats.forEach(c=>{ %>
+      <div id="cat-<%= c %>" class="grid md:grid-cols-4 gap-3 mb-4">
+        <% templates.filter(t=>t.category===c).forEach(t=>{ %>
+          <label class="block border border-white/10 rounded-xl p-2">
+            <input type="radio" name="template_key" form="form-tpl" value="<%= t.key_name %>" <%= inv.template_key===t.key_name?'checked':'' %> />
+            <div class="text-sm font-semibold mt-1"><%= t.name %></div>
+            <img class="rounded-lg mt-2" src="<%= t.preview_img %>" alt="">
+          </label>
+        <% }) %>
+      </div>
+    <% }) %>
+    <form id="form-tpl" method="post" action="/panel/wizard/template">
+      <input type="hidden" name="invitation_id" value="<%= inv.id %>">
+      <button class="btn btn-primary">Guardar plantilla</button>
+    </form>
+  </div>
+
+
+  <div class="card">
+    <h3 class="text-lg font-bold mb-3">2) URL (slug)</h3>
+    <form method="post" action="/panel/wizard/slug" class="flex gap-2 items-center">
+      <input type="hidden" name="invitation_id" value="<%= inv.id %>"/>
+      <span>/u/</span>
+      <input class="px-3 py-2 rounded bg-black/30" name="slug" value="<%= inv.slug %>" <%= inv.slug_locked?'disabled':'' %> required />
+      <button class="btn btn-primary" <%= inv.slug_locked?'disabled':'' %>>Guardar</button>
+      <% if (inv.slug_locked){ %><span class="text-sm text-red-300 ml-2">Bloqueado</span><% } %>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 class="text-lg font-bold mb-3">3) Fecha del evento</h3>
+    <form method="post" action="/panel/wizard/date" class="flex gap-2 items-center">
+      <input type="hidden" name="invitation_id" value="<%= inv.id %>"/>
+      <input class="px-3 py-2 rounded bg-black/30" name="date_iso" type="datetime-local" value="<%= inv.date_iso.substring(0,16) %>" <%= inv.date_locked?'disabled':'' %> required />
+      <button class="btn btn-primary" <%= inv.date_locked?'disabled':'' %>>Guardar (se bloquea)</button>
+      <% if (inv.date_locked){ %><span class="text-sm text-red-300 ml-2">Fecha bloqueada</span><% } %>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 class="text-lg font-bold mb-3">4) Orden de secciones</h3>
+    <p class="text-sm text-[var(--ring)] mb-3">Arrastra para reordenar.</p>
+    <ul id="sec-list" class="grid md:grid-cols-3 gap-2">
+      <% (JSON.parse(inv.section_order||'["hero","detalles","mensaje","galeria","ubicacion","rsvp","footer"]')).forEach(s=>{ %>
+        <li class="drag-item card cursor-move" data-key="<%= s %>"><%= s %></li>
+      <% }) %>
+    </ul>
+    <form method="post" action="/panel/wizard/sections" class="mt-3">
+      <input type="hidden" name="invitation_id" value="<%= inv.id %>">
+      <input type="hidden" name="order" id="order">
+      <button class="btn btn-primary">Guardar orden</button>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <script>
+    const list = document.getElementById('sec-list');
+    new Sortable(list, { animation: 150 });
+    document.querySelector('form[action="/panel/wizard/sections"]').addEventListener('submit', (e)=>{
+      const order = [...list.querySelectorAll('.drag-item')].map(li=>li.dataset.key);
+      document.getElementById('order').value = order.join(',');
+    });
+  </script>
+</section>
