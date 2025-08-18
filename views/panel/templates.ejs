@@ -6,6 +6,16 @@
       <input name="key_name" class="px-3 py-2 rounded bg-black/30" placeholder="Clave" required />
       <input name="name" class="px-3 py-2 rounded bg-black/30" placeholder="Nombre" required />
       <input name="preview_img" class="px-3 py-2 rounded bg-black/30" placeholder="URL de preview" />
+      <input name="category" class="px-3 py-2 rounded bg-black/30" placeholder="Categoría" value="general" />
+      <select name="tier" class="px-3 py-2 rounded bg-black/30">
+        <option value="general">general</option>
+        <option value="all">all</option>
+        <option value="premium">premium</option>
+      </select>
+      <label class="flex items-center gap-2">
+        <input type="checkbox" name="is_active" value="1" checked /> Activa
+      </label>
+      <input type="number" name="sort_order" class="px-3 py-2 rounded bg-black/30" placeholder="Orden" value="0" />
       <textarea name="demo_theme_json" class="px-3 py-2 rounded bg-black/30" rows="3" placeholder='{"colors":{}}'></textarea>
       <button class="btn btn-primary mt-2">Crear</button>
     </div>
@@ -17,6 +27,16 @@
         <form method="post" action="/panel/templates/<%= t.id %>" class="grid gap-2">
           <input name="name" value="<%= t.name %>" class="px-3 py-2 rounded bg-black/30" />
           <input name="preview_img" value="<%= t.preview_img || '' %>" class="px-3 py-2 rounded bg-black/30" />
+          <input name="category" value="<%= t.category %>" class="px-3 py-2 rounded bg-black/30" />
+          <select name="tier" class="px-3 py-2 rounded bg-black/30">
+            <option value="general" <%= t.tier==='general'?'selected':'' %>>general</option>
+            <option value="all" <%= t.tier==='all'?'selected':'' %>>all</option>
+            <option value="premium" <%= t.tier==='premium'?'selected':'' %>>premium</option>
+          </select>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" name="is_active" value="1" <%= t.is_active ? 'checked' : '' %> /> Activa
+          </label>
+          <input type="number" name="sort_order" value="<%= t.sort_order %>" class="px-3 py-2 rounded bg-black/30" />
           <textarea name="demo_theme_json" class="px-3 py-2 rounded bg-black/30" rows="3"><%= t.demo_theme_json %></textarea>
           <div class="flex gap-2">
             <button class="btn btn-primary">Actualizar</button>

@@ -100,6 +100,7 @@ app.use('/public', express.static(path.join(__dirname, 'public')))
 
 // inyecta DB
 app.use((req, res, next) => {
+  req.db = pool
   // Fallbacks para que _layout.ejs nunca reciba undefined
   res.locals.theme = res.locals.theme || {};
   res.locals.tpl   = res.locals.tpl   || 'default';

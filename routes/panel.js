@@ -4,8 +4,14 @@ const router = Router()
 
 function authed(req,res,next){ if(req.session.uid) return next(); res.redirect('/auth/login') }
 
+function ensureAdmin(req,res,next){
+  if(req.session.email === 'david_010@live.com.mx') return next()
+  res.status(403).send('Acceso restringido')
+}
+
 // Sub-ruta para gestionar plantillas
-router.use('/templates', authed, templatesRouter)
+
+router.use('/templates', authed, ensureAdmin, templatesRouter)
 
 router.get('/', authed, async (req,res)=>{
   const [[inv]] = await req.db.query('SELECT * FROM invitations WHERE user_id=? ORDER BY created_at DESC LIMIT 1', [req.session.uid])
