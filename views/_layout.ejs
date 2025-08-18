@@ -102,8 +102,8 @@
   </style>
 </head>
 <body class="tpl-<%= tplKey %>">
-  <% if (typeof show_nav === 'undefined' ? true : show_nav) { %>
-    <%- include('partials/topbar', { uid: (typeof uid !== 'undefined' ? uid : null) }) %>
+<% if (!(typeof hideNav !== 'undefined' && hideNav)) { %>
+    <%- include('partials/topbar') %>
   <% } %>
   <%- body %>
 </body>

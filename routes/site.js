@@ -198,16 +198,18 @@ router.post('/site/crear/preview', async (req, res) => {
   const [[tpl]]  = await req.db.query('SELECT * FROM templates WHERE key_name=? LIMIT 1', [pref.template_key || 'default']);
   const [[plan]] = await req.db.query('SELECT * FROM plans WHERE code=? LIMIT 1', [pref.plan_code || 'basic']);
 
-  // Base theme del template
-  const base = tpl?.demo_theme_json
-    ? JSON.parse(tpl.demo_theme_json)
-    : {
-        colors:{bg:'#0e0e1a',text:'#f5f4f7',accent:'#4c3b33',muted:'#b5b1aa',ring:'#cdcbc9'},
-        media:{video:'/public/video/sample.mp4',poster:'/public/img/placeholder.jpg',bg:null,gallery:[]},
-        copy:{intro:'Reserva la fecha y acompáñanos.'},
-        hero:{mode:'video', overlay:'rgba(0,0,0,.45)'},
-        fonts:{}
-      };
+  // Base theme del template (permite override sin guardar)
+  const rawTheme = req.body.demo_theme_json || tpl?.demo_theme_json;
+  const fallbackBase = {
+    colors:{bg:'#0e0e1a',text:'#f5f4f7',accent:'#4c3b33',muted:'#b5b1aa',ring:'#cdcbc9'},
+    media:{video:'/public/video/sample.mp4',poster:'/public/img/placeholder.jpg',bg:null,gallery:[]},
+    copy:{intro:'Reserva la fecha y acompáñanos.'},
+    hero:{mode:'video', overlay:'rgba(0,0,0,.45)'},
+    fonts:{},
+  };
+  let base = fallbackBase;
+  try { if (rawTheme) base = JSON.parse(rawTheme); } catch {}
+
 
   // Mezcla palette + mensaje
   let pal = {};
@@ -249,7 +251,7 @@ const data = {
   const known = new Set(['default','elegant','fairytale']);
   const view  = known.has(data.template_key) ? `templates/${data.template_key}` : 'templates/default';
 
-  return res.render('public', { data, theme, view, tpl: data.template_key, title: 'Preview' });
+  return res.render('public', { data, theme, view, tpl: data.template_key, title: 'Preview', hideNav: true });
 });
 
 
