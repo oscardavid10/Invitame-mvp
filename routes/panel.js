@@ -14,6 +14,8 @@ function ensureAdmin(req,res,next){
 router.use('/templates', authed, ensureAdmin, templatesRouter)
 
 router.get('/', authed, async (req,res)=>{
+  if (req.session.is_admin) return res.redirect('/admin'); // admins al dashboard de admin
+  
   const [invitations] = await req.db.query(
     "SELECT * FROM invitations WHERE user_id=? AND status='active' ORDER BY created_at DESC",
     [req.session.uid]

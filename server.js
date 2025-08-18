@@ -99,14 +99,46 @@ app.use(express.json())
 app.use('/public', express.static(path.join(__dirname, 'public')))
 
 // inyecta DB
-app.use((req, res, next) => {
-  req.db = pool
-  // Fallbacks para que _layout.ejs nunca reciba undefined
-  res.locals.theme = res.locals.theme || {};
-  res.locals.tpl   = res.locals.tpl   || 'default';
-  res.locals.uid   = req.session?.uid || null;
-  res.locals.email = req.session?.email || null;
+app.use(async (req, res, next) => {
+  // DB en la request
+  req.db = pool;
+
+  // Fallbacks para layout
+  res.locals.theme   = res.locals.theme || {};
+  res.locals.tpl     = res.locals.tpl   || 'default';
   res.locals.hideNav = false;
+
+  // Usuario visible en las vistas
+  res.locals.user  = null;
+  res.locals.uid   = null;
+  res.locals.email = null;
+
+  try {
+    if (req.session?.uid) {
+      const [[u]] = await pool.query(
+        'SELECT id, email, name, is_admin FROM users WHERE id=? LIMIT 1',
+        [req.session.uid]
+      );
+
+      if (u) {
+        res.locals.user       = u;            // { id, email, name, is_admin }
+        res.locals.uid        = u.id;
+        res.locals.email      = u.email;
+        req.session.is_admin  = !!u.is_admin; // flag en sesión para /admin
+      } else {
+        // Sesión huérfana: limpia
+        delete req.session.uid;
+        delete req.session.is_admin;
+      }
+    } else {
+      // No hay sesión: asegúrate de limpiar admin
+      delete req.session?.is_admin;
+    }
+  } catch (e) {
+    console.error('locals user err:', e.message);
+    // no bloquees la petición si falla; seguimos sin user
+  }
+
   next();
 });
 

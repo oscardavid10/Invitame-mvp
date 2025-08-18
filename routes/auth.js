@@ -13,17 +13,40 @@ function setSessionAndGo(req, res, uid, email, nextUrl='/panel') {
 
 router.get('/login', (req,res)=> res.render('site/login', { next: req.query.next || '/panel' }))
 
-router.post('/register', async (req,res)=>{
-  const { email, password, next } = req.body
+router.get('/register', (req, res) => {
+  if (req.session.uid) return res.redirect('/panel');
+  res.render('site/register', { title: 'Crear cuenta' });
+});
+
+router.post('/register', async (req, res) => {
   try {
-    const hash = await bcrypt.hash(password, 10)
-    const [u] = await req.db.query('INSERT INTO users (email, password_hash) VALUES (?,?)', [email, hash])
-        setSessionAndGo(req, res, u.insertId, email, next || '/panel')
-  } catch(e){
-    if (e.code === 'ER_DUP_ENTRY') return res.status(400).send('Email ya registrado')
-    throw e
+    const { name = '', email = '', password = '' } = req.body;
+    if (!email || !password) return res.status(400).send('Faltan datos');
+
+    const [[exists]] = await pool.query('SELECT id FROM users WHERE email=? LIMIT 1', [email]);
+    if (exists) return res.status(409).send('Este correo ya está registrado');
+
+    const hash = await bcrypt.hash(password, 10);
+    const [ins] = await pool.query(
+      'INSERT INTO users (name, email, password_hash, is_admin) VALUES (?,?,?,?)',
+      [
+        name.trim(),
+        email.trim().toLowerCase(),
+        hash,
+        email.trim().toLowerCase() === 'david_010@live.com.mx' ? 1 : 0, // tu admin por correo
+      ]
+    );
+
+    req.session.uid = ins.insertId;
+    // trae el usuario para locals y flag de admin
+    const [[u]] = await pool.query('SELECT id, email, name, is_admin FROM users WHERE id=?', [ins.insertId]);
+    req.session.is_admin = !!u?.is_admin;
+    return res.redirect(u.is_admin ? '/admin' : '/panel');
+  } catch (e) {
+    console.error('POST /auth/register', e);
+    res.status(500).send('Error registrando usuario');
   }
-})
+});
 
 router.post('/login', async (req,res)=>{
   const { email, password, next } = req.body
