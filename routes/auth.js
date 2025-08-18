@@ -1,12 +1,15 @@
 import { Router } from 'express'
 import bcrypt from 'bcrypt'
+import { pool } from '../utils/db.js'
 const router = Router()
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'david_010@live.com.mx'
 
-function setSessionAndGo(req, res, uid, email, nextUrl='/panel') {
+function setSessionAndGo(req, res, uid, email, nextUrl='/panel', isAdmin=false) {
   req.session.regenerate(err => {
     if (err) return res.status(500).send('Session error')
     req.session.uid = uid
     req.session.email = email
+    req.session.is_admin = isAdmin
     req.session.save(() => res.redirect(nextUrl))
   })
 }
@@ -14,7 +17,6 @@ function setSessionAndGo(req, res, uid, email, nextUrl='/panel') {
 router.get('/login', (req,res)=> res.render('site/login', { next: req.query.next || '/panel' }))
 
 router.get('/register', (req, res) => {
-  if (req.session.uid) return res.redirect('/panel');
   res.render('site/register', { title: 'Crear cuenta' });
 });
 
@@ -33,7 +35,7 @@ router.post('/register', async (req, res) => {
         name.trim(),
         email.trim().toLowerCase(),
         hash,
-        email.trim().toLowerCase() === 'david_010@live.com.mx' ? 1 : 0, // tu admin por correo
+        email.trim().toLowerCase() === ADMIN_EMAIL ? 1 : 0,
       ]
     );
 
@@ -54,7 +56,9 @@ router.post('/login', async (req,res)=>{
   if(!rows.length) return res.status(401).send('Credenciales inválidas')
   const ok = await bcrypt.compare(password, rows[0].password_hash)
   if(!ok) return res.status(401).send('Credenciales inválidas')
-  setSessionAndGo(req, res, rows[0].id, rows[0].email, next || '/panel')
+  const isAdmin = rows[0].is_admin || rows[0].email === ADMIN_EMAIL
+  const dest = isAdmin ? '/admin/templates' : (next || '/panel')
+  setSessionAndGo(req, res, rows[0].id, rows[0].email, dest, !!isAdmin)
 })
 
 router.post('/logout', (req, res) => {

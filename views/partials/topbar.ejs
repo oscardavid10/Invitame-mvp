@@ -1,9 +1,13 @@
-<nav class="sticky top-10 z-20 bg-[color:var(--bg)]/80 backdrop-blur border-b border-white/10">
+<nav class="sticky top-10 mt-4 z-20 bg-[color:var(--bg)]/80 backdrop-blur border-b border-white/10">
   <div class="container mx-auto px-5 h-12 flex items-center justify-between">
     <a href="/" class="font-display text-lg">Invítame</a>
     <div class="flex items-center gap-2">
       <% if (uid) { %>
-        <a href="/panel" class="btn btn-ghost">Panel</a>
+        <% if (user?.is_admin) { %>
+          <a href="/admin/templates" class="btn btn-ghost">Admin</a>
+        <% } else { %>
+          <a href="/panel" class="btn btn-ghost">Panel</a>
+        <% } %>
         <form action="/auth/logout" method="post" class="inline">
           <button class="btn btn-primary">Salir</button>
         </form>
