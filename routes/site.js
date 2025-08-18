@@ -135,12 +135,10 @@ const [templates] = await req.db.query(
 
 // GET /site/crear/step/:n  (navegación del wizard)
 router.get('/site/crear/step/:n', async (req, res) => {
-const planCode = req.query.plan || req.session.pref.plan_code || 'basic'
-const [[plan]] = await req.db.query('SELECT * FROM plans WHERE code=? LIMIT 1', [planCode])
-if (!plan) return res.redirect('/planes')
-
-// asegura la sesión con el plan vigente
-req.session.pref.plan_code = plan.code
+const planCode = req.query.plan || req.session.pref.plan_code || 'basic';
+const [[plan]] = await req.db.query('SELECT * FROM plans WHERE code=? LIMIT 1', [planCode]);
+if (!plan) return res.redirect('/planes');
+req.session.pref.plan_code = plan.code; // guarda el plan en sesión
 
 const steps = buildSteps(plan) // <- tu helper dinámico
 const n = Number(req.params.n) || 1
@@ -248,7 +246,7 @@ router.post('/site/crear/preview', async (req, res) => {
 router.post('/site/crear/continuar', async (req, res) => {
   // persiste lo más importante para metadata de Stripe
   Object.assign(req.session.pref, {
-    plan_code:   req.body.plan_code   ?? req.session.pref.plan_code,
+    plan_code:   req.session.pref.plan_code,
     template_key:req.body.template_key?? req.session.pref.template_key,
     title:       req.body.title       ?? req.session.pref.title,
     festejado:   req.body.festejado   ?? req.session.pref.festejado,

@@ -167,25 +167,39 @@
   const TOTAL_STEPS  = <%= MAX_STEPS %>;
   let step = <%= Number(step) || 1 %>;
 
-  const LS_KEY = 'crear_state_v1';
 
-  function saveState(){
-    const fd=new FormData(wz); const obj={};
-    fd.forEach((v,k)=> obj[k]=v);
-    obj.show_map = wz.elements['show_map']?.checked ? 'on' : '';
-    obj.music_autoplay = wz.elements['music_autoplay']?.checked ? 'on' : '';
-    localStorage.setItem(LS_KEY, JSON.stringify(obj));
-  }
-  function loadState(){
-    try{
-      const obj=JSON.parse(localStorage.getItem(LS_KEY) || '{}');
-      Object.entries(obj).forEach(([k,v])=>{
-        const el=wz.elements[k]; if(!el) return;
-        if(el.type==='checkbox') el.checked=(v==='on'); else el.value=v;
-      });
-      updateMap();
-    }catch{}
-  }
+  const SERVER_PLAN = "<%= plan.code %>";
+  const LS_KEY = 'crear_state_v2_' + SERVER_PLAN; // un LS distinto por plan
+
+
+function saveState() {
+  const fd = new FormData(wz);
+  const obj = {};
+  fd.forEach((v, k) => {
+    if (k === 'plan_code') return;        // 🚫 no persistir el plan
+    obj[k] = v;
+  });
+  obj.show_map = wz.elements['show_map']?.checked ? 'on' : '';
+  obj.music_autoplay = wz.elements['music_autoplay']?.checked ? 'on' : '';
+  localStorage.setItem(LS_KEY, JSON.stringify(obj));
+}
+
+function loadState() {
+  // ⚠️ forzar plan desde servidor (por si había LS viejo)
+  if (wz.elements['plan_code']) wz.elements['plan_code'].value = SERVER_PLAN;
+
+  try {
+    const obj = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    Object.entries(obj).forEach(([k, v]) => {
+      const el = wz.elements[k];
+      if (!el || k === 'plan_code') return; // 🚫 no tocar el plan
+      if (el.type === 'checkbox') el.checked = (v === 'on');
+      else el.value = v;
+    });
+    updateMap();
+  } catch {}
+}
+
 
   function updateMap(){
     const addr=(wz.elements['address']?.value || '').trim();
@@ -223,6 +237,7 @@
   }
 
   function publishAndPay(){
+    if (wz.elements['plan_code']) wz.elements['plan_code'].value = SERVER_PLAN;
     const form=document.getElementById('form-continue');
     form.innerHTML='';
     const qs=new URLSearchParams(buildUrlEncodedFrom(wz));
