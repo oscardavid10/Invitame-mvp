@@ -23,11 +23,11 @@ function setSessionAndGo(
 }
 
 router.get("/login", (req, res) =>
-  res.render("site/login", { next: req.query.next || "/panel" })
+  res.render("site/login", { next: req.query.next || "/panel", error: null })
 );
 
 router.get("/register", (req, res) => {
-  res.render("site/register", { title: "Crear cuenta" });
+  res.render("site/register", { title: "Crear cuenta", error: null });
 });
 
 router.post("/register", async (req, res) => {
