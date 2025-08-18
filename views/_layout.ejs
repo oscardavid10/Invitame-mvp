@@ -69,6 +69,7 @@
 
     .btn{ display:inline-block; padding:.6rem 1rem; border:1px solid var(--ring); border-radius:.75rem }
     .btn-primary{ background: var(--accent); color:#fff; }
+    .btn-ghost{ background: transparent; color: var(--text); }
     .card{ background: rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:1rem; padding:1rem }
 
     /* default */
@@ -87,14 +88,16 @@
   </style>
 </head>
 <body class="tpl-<%= tplKey %>">
+  <% if (!hideNav) { %>
     <nav class="p-4 text-sm flex justify-end gap-4">
-    <% if (uid) { %>
-      <a href="/panel" class="hover:underline">Panel</a>
-      <a href="/auth/logout" class="hover:underline">Salir</a>
-    <% } else { %>
-      <a href="/auth/login" class="hover:underline">Entrar</a>
-    <% } %>
-  </nav>
+      <% if (uid) { %>
+        <a href="/panel" class="hover:underline">Panel</a>
+        <a href="/auth/logout" class="hover:underline">Salir</a>
+      <% } else { %>
+        <a href="/auth/login" class="hover:underline">Entrar</a>
+      <% } %>
+    </nav>
+  <% } %>
   <%- body %>
 </body>
 </html>

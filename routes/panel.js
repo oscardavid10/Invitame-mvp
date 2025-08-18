@@ -14,14 +14,22 @@ function ensureAdmin(req,res,next){
 router.use('/templates', authed, ensureAdmin, templatesRouter)
 
 router.get('/', authed, async (req,res)=>{
-const [invitations] = await req.db.query(
-    'SELECT * FROM invitations WHERE user_id=? AND status="active" ORDER BY created_at DESC',
+  const [invitations] = await req.db.query(
+    "SELECT * FROM invitations WHERE user_id=? AND status='active' ORDER BY created_at DESC",
     [req.session.uid]
   )
-  if (!invitations.length) {
-    return res.render('panel/locked', { msg: 'Compra un plan para continuar.' })
+
+  if (invitations.length) {
+    return res.render('panel/index', { invitations })
   }
-  res.render('panel/index', { invitations })
+
+  const [[{ total }]] = await req.db.query(
+    'SELECT COUNT(*) AS total FROM invitations WHERE user_id=?',
+    [req.session.uid]
+  )
+
+  const msg = total ? 'Aún no tienes invitaciones activas.' : 'Compra un plan para continuar.'
+  res.render('panel/locked', { msg })
 })
 
 router.get('/wizard/:id?', authed, async (req,res)=>{
@@ -130,7 +138,7 @@ router.get('/preview/:id', authed, async (req,res)=>{
   if(!inv) return res.status(404).send('Invitación no encontrada')
   const theme = JSON.parse(inv.theme_json)
   const view = inv.template_key === 'elegant' ? 'templates/elegant' : 'templates/default'
-  res.render(view, { data: inv, theme })
+  res.render(view, { data: inv, theme, hideNav: true })
 })
 
 export default router
