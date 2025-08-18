@@ -1,7 +1,24 @@
 <section id="detalles" class="py-12">
   <div class="container mx-auto px-5 grid md:grid-cols-3 gap-6">
-    <div class="card"><h3 class="font-display text-xl">Cuándo</h3><p class="mt-2 text-[var(--ring)]"><%= new Date(data.date_iso).toLocaleString('es-MX',{dateStyle:'full', timeStyle:'short'}) %></p></div>
-    <div class="card"><h3 class="font-display text-xl">Dónde</h3><p class="mt-2 text-[var(--ring)]"><%= data.venue %><br/><%= data.address %></p></div>
-    <div class="card"><h3 class="font-display text-xl">Vestimenta</h3><p class="mt-2 text-[var(--ring)]"><%= data.dresscode %></p></div>
+    <div class="card">
+      <h3 class="font-display text-xl">Cuándo</h3>
+      <p class="mt-2 text-[var(--ring)]">
+        <%= new Date(data.date_iso).toLocaleString('es-MX',{dateStyle:'full', timeStyle:'short'}) %>
+      </p>
+    </div>
+    <div class="card">
+      <h3 class="font-display text-xl">Dónde</h3>
+      <p class="mt-2 text-[var(--ring)]">
+        <strong>Recepción:</strong> <%= data.venue %><br/><%= data.address %>
+        <% if ((data.ceremony_venue||'').trim() || (data.ceremony_address||'').trim()) { %>
+          <br/><br/><strong>Ceremonia:</strong> <%= data.ceremony_venue || '' %>
+          <% if ((data.ceremony_address||'').trim()) { %><br/><%= data.ceremony_address %><% } %>
+        <% } %>
+      </p>
+    </div>
+    <div class="card">
+      <h3 class="font-display text-xl">Vestimenta</h3>
+      <p class="mt-2 text-[var(--ring)]"><%= (pref?.dress_code || '') %></p>
+    </div>
   </div>
 </section>
