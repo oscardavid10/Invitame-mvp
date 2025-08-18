@@ -34,6 +34,21 @@ router.post('/login', async (req,res)=>{
   setSessionAndGo(req, res, rows[0].id, rows[0].email, next || '/panel')
 })
 
-router.get('/logout', (req,res)=>{ req.session.destroy(()=>res.redirect('/')) })
+router.post('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) console.error('logout err:', err);
+    // El nombre por defecto de la cookie de sesión es 'connect.sid'
+    res.clearCookie(process.env.SESSION_NAME || 'connect.sid', { path: '/' });
+    return res.redirect('/');
+  });
+});
+
+router.get('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) console.error('logout err:', err);
+    res.clearCookie(process.env.SESSION_NAME || 'connect.sid', { path: '/' });
+    return res.redirect('/');
+  });
+});
 
 export default router
