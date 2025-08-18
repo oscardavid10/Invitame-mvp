@@ -14,12 +14,17 @@ function ensureAdmin(req,res,next){
 router.use('/templates', authed, ensureAdmin, templatesRouter)
 
 router.get('/', authed, async (req,res)=>{
-  const [[inv]] = await req.db.query('SELECT * FROM invitations WHERE user_id=? ORDER BY created_at DESC LIMIT 1', [req.session.uid])
-  if(!inv) return res.render('panel/locked', { msg: 'Compra un plan para continuar.' })
-  res.render('panel/index', { inv })
+const [invitations] = await req.db.query(
+    'SELECT * FROM invitations WHERE user_id=? AND status="active" ORDER BY created_at DESC',
+    [req.session.uid]
+  )
+  if (!invitations.length) {
+    return res.render('panel/locked', { msg: 'Compra un plan para continuar.' })
+  }
+  res.render('panel/index', { invitations })
 })
 
-router.get('/wizard', authed, async (req,res)=>{
+router.get('/wizard/:id?', authed, async (req,res)=>{
   const plan = await getActivePlan(req)
   const tier = plan?.template_scope || 'general'
   const [templates] = await req.db.query(
@@ -29,7 +34,18 @@ router.get('/wizard', authed, async (req,res)=>{
       ? 'SELECT * FROM templates WHERE tier IN ("general","all") ORDER BY category,id'
       : 'SELECT * FROM templates ORDER BY category,id'
   )
-  const [[inv]] = await req.db.query('SELECT * FROM invitations WHERE user_id=? ORDER BY created_at DESC LIMIT 1', [req.session.uid])
+   let inv
+  if (req.params.id) {
+    ;[[inv]] = await req.db.query(
+      'SELECT * FROM invitations WHERE id=? AND user_id=?',
+      [req.params.id, req.session.uid]
+    )
+  } else {
+    ;[[inv]] = await req.db.query(
+      'SELECT * FROM invitations WHERE user_id=? AND status="active" ORDER BY created_at DESC LIMIT 1',
+      [req.session.uid]
+    )
+  }
   const cats = [...new Set(templates.map(t=>t.category))]
   res.render('panel/wizard', { templates, cats, inv, plan })
 })

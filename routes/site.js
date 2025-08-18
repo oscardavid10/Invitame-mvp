@@ -80,6 +80,15 @@ router.use((req, res, next) => {
   next()
 })
 
+function authed(req, res, next) {
+  if (req.session.uid) return next()
+  const nextUrl = encodeURIComponent(req.originalUrl)
+  res.redirect('/auth/login?next=' + nextUrl)
+}
+
+router.use('/site/crear', authed)
+
+
 // Home (si la usas)
 router.get('/', (req, res) => {
   res.render('site/home', { theme: {}, tpl: 'default' })
@@ -266,12 +275,6 @@ router.post('/site/crear/continuar', async (req, res) => {
     palette:     req.body.palette     ?? req.session.pref.palette
   })
 
-  if (!req.session.uid) {
-    // tras login te mandas a /checkout/start (o a /checkout/:id según tu flujo)
-    // return res.redirect('/auth/login?next=/checkout/start')
-    const nextUrl = '/checkout/start?plan=' + encodeURIComponent(req.session.pref.plan_code || 'basic');
-    return res.redirect('/auth/login?next=' + encodeURIComponent(nextUrl));
-  }
   return res.redirect('/checkout/start')
 })
 

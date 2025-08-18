@@ -104,6 +104,8 @@ app.use((req, res, next) => {
   // Fallbacks para que _layout.ejs nunca reciba undefined
   res.locals.theme = res.locals.theme || {};
   res.locals.tpl   = res.locals.tpl   || 'default';
+  res.locals.uid   = req.session?.uid || null;
+  res.locals.email = req.session?.email || null;
   next();
 });
 
