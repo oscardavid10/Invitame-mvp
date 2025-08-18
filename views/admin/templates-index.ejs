@@ -1,0 +1,16 @@
+<section class="container mx-auto px-5 py-10">
+  <h1 class="text-2xl font-bold mb-4">Plantillas</h1>
+  <a class="btn btn-primary" href="/admin/templates/new">Nueva</a>
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+    <% rows.forEach(r=>{ %>
+      <article class="card">
+        <img class="rounded-xl w-full aspect-video object-cover" src="<%= r.preview_img || '/public/img/template-placeholder.jpg' %>">
+        <h3 class="mt-3 font-display text-xl"><%= r.name %></h3>
+        <p class="text-sm text-[var(--ring)]"><%= r.category %> · <%= r.key_name %></p>
+        <div class="mt-3 flex gap-2">
+          <a class="btn" href="/admin/templates/<%= r.id %>">Editar</a>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</section>

@@ -1,0 +1,16 @@
+<nav class="sticky top-0 z-20 bg-[color:var(--bg)]/80 backdrop-blur border-b border-white/10">
+  <div class="container mx-auto px-5 h-12 flex items-center justify-between">
+    <a href="/" class="font-display text-lg">Invítame</a>
+    <div class="flex items-center gap-2">
+      <% if (uid) { %>
+        <a href="/panel" class="btn btn-ghost">Panel</a>
+        <form action="/auth/logout" method="post" class="inline">
+          <button class="btn btn-primary">Salir</button>
+        </form>
+      <% } else { %>
+        <a href="/auth/login" class="btn btn-ghost">Entrar</a>
+        <a href="/auth/register" class="btn btn-primary">Crear cuenta</a>
+      <% } %>
+    </div>
+  </div>
+</nav>

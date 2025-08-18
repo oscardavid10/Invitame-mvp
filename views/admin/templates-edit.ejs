@@ -1,0 +1,52 @@
+<section class="container mx-auto px-5 py-10">
+  <h1 class="text-2xl font-bold mb-4"><%= row ? 'Editar' : 'Nueva' %> plantilla</h1>
+  <form method="post" action="<%= row ? '/admin/templates/'+row.id : '/admin/templates' %>" class="grid gap-4">
+    <% if (!row) { %>
+      <div><label>Key</label><input name="key_name" required class="rounded bg-black/30 px-3 py-2 w-full"></div>
+    <% } %>
+    <div><label>Nombre</label><input name="name" value="<%= row?.name || '' %>" class="rounded bg-black/30 px-3 py-2 w-full"></div>
+    <div><label>Categoría</label><input name="category" value="<%= row?.category || '' %>" class="rounded bg-black/30 px-3 py-2 w-full"></div>
+    <div><label>Preview Img</label><input name="preview_img" value="<%= row?.preview_img || '' %>" class="rounded bg-black/30 px-3 py-2 w-full"></div>
+    <div><label>Orden</label><input type="number" name="sort_order" value="<%= row?.sort_order || 0 %>" class="rounded bg-black/30 px-3 py-2 w-full"></div>
+    <label class="flex items-center gap-2"><input type="checkbox" name="active" <%= row?.active ? 'checked' : '' %> > Activa</label>
+    <div>
+      <label>demo_theme_json</label>
+      <textarea name="demo_theme_json" rows="12" class="rounded bg-black/30 px-3 py-2 w-full"><%= row?.demo_theme_json || '{}' %></textarea>
+    </div>
+
+    <div class="flex gap-2">
+      <button class="btn btn-primary" type="submit">Guardar</button>
+      <button class="btn" type="button" id="btnPreview">Preview</button>
+    </div>
+
+    <div id="previewWrap" class="hidden mt-4 rounded overflow-hidden border border-white/10">
+      <iframe id="previewFrame" class="w-full" style="height:70vh" loading="lazy"></iframe>
+    </div>
+  </form>
+</section>
+
+<script>
+document.getElementById('btnPreview')?.addEventListener('click', async ()=>{
+  const form = document.querySelector('form');
+  const themeJson = form.querySelector('textarea[name="demo_theme_json"]').value || '{}';
+  const body = new URLSearchParams({
+    plan_code:'elite',                 // para habilitar todo en preview
+    template_key:'<%= row?.key_name || 'default' %>',
+    title:'Mi Evento',
+    date: new Date().toISOString().slice(0,10),
+    time:'19:00',
+    venue:'Salón Principal',
+    address:'Calle 123, Ciudad',
+    palette:'{}',
+    message:'Texto demo',
+  });
+  const res = await fetch('/site/crear/preview', {
+    method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+    body,
+    credentials:'same-origin'
+  });
+  document.getElementById('previewWrap').classList.remove('hidden');
+  document.getElementById('previewFrame').srcdoc = await res.text();
+});
+</script>

@@ -6,11 +6,62 @@ import fs from 'fs'
 const upload = multer({ dest: 'uploads/' })
 const router = Router()
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'david_010@live.com.mx';
+
+async function requireAdmin(req, res, next) {
+  if (!req.session.uid) return res.redirect('/auth/login?next=/admin/templates');
+
+  // obtén el email del usuario
+  const [[u]] = await req.db.query('SELECT email FROM users WHERE id=? LIMIT 1', [req.session.uid]);
+  if (u?.email === ADMIN_EMAIL) return next();
+
+  return res.status(403).send('Solo admin');
+}
+
 // Auth mínima por sesión y .env
 function ensureAuth(req, res, next){
   if (req.session?.authed) return next()
   res.redirect('/admin/login')
 }
+
+// Lista
+router.get('/templates', requireAdmin, async (req,res)=>{
+  const [rows] = await req.db.query('SELECT * FROM templates ORDER BY sort_order, id');
+  res.render('admin/templates-index', { rows, title:'Plantillas' });
+});
+
+// Nuevo
+router.get('/templates/new', requireAdmin, (req,res)=>{
+  res.render('admin/templates-edit', { row:null, title:'Nueva plantilla' });
+});
+
+// Crear
+router.post('/templates', requireAdmin, async (req,res)=>{
+  const { key_name, name, category, preview_img, sort_order, active, demo_theme_json } = req.body;
+  await req.db.query(
+    'INSERT INTO templates (key_name, name, category, preview_img, sort_order, active, demo_theme_json) VALUES (?,?,?,?,?,?,?)',
+    [key_name, name, category, preview_img, Number(sort_order)||0, active?1:0, demo_theme_json||'{}']
+  );
+  res.redirect('/admin/templates');
+});
+
+// Editar
+router.get('/templates/:id', requireAdmin, async (req,res)=>{
+  const [[row]] = await req.db.query('SELECT * FROM templates WHERE id=?', [req.params.id]);
+  if (!row) return res.redirect('/admin/templates');
+  res.render('admin/templates-edit', { row, title:`Editar ${row.name}` });
+});
+
+// Guardar edición
+router.post('/templates/:id', requireAdmin, async (req,res)=>{
+  const { name, category, preview_img, sort_order, active, demo_theme_json } = req.body;
+  await req.db.query(
+    'UPDATE templates SET name=?, category=?, preview_img=?, sort_order=?, active=?, demo_theme_json=? WHERE id=?',
+    [name, category, preview_img, Number(sort_order)||0, active?1:0, demo_theme_json||'{}', req.params.id]
+  );
+  res.redirect('/admin/templates');
+});
+
 
 router.get('/login', (req,res)=>{
   res.send(`

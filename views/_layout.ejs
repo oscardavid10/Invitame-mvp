@@ -102,15 +102,8 @@
   </style>
 </head>
 <body class="tpl-<%= tplKey %>">
-  <% if (!hideNav) { %>
-    <nav class="p-4 text-sm flex justify-end gap-4">
-      <% if (uid) { %>
-        <a href="/panel" class="hover:underline">Panel</a>
-        <a href="/auth/logout" class="hover:underline">Salir</a>
-      <% } else { %>
-        <a href="/auth/login" class="hover:underline">Entrar</a>
-      <% } %>
-    </nav>
+  <% if (typeof show_nav === 'undefined' ? true : show_nav) { %>
+    <%- include('partials/topbar', { uid: (typeof uid !== 'undefined' ? uid : null) }) %>
   <% } %>
   <%- body %>
 </body>
