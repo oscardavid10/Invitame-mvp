@@ -6,9 +6,9 @@
 
   <%
     const STEPS = Array.isArray(steps) ? steps : [];
-    const stepIndex  = (k)=> (STEPS.findIndex(s=>s.key===k)+1);
+    const stepIndex = (k)=> (STEPS.findIndex(s=>s.key===k)+1);
     const PREVIEW_STEP = stepIndex('preview');
-    const MAX_STEPS    = STEPS.length;
+    const MAX_STEPS   = STEPS.length;
   %>
 
   <!-- Stepper -->
@@ -20,7 +20,7 @@
     <% }) %>
   </ol>
 
-  <!-- Barra de navegación (arriba) -->
+  <!-- Barra de navegación del wizard (arriba, sticky) -->
   <div class="sticky top-0 z-10 bg-[color:var(--bg)]/70 backdrop-blur border-b border-white/10 py-2 mb-4">
     <div class="flex justify-between px-1">
       <button type="button" class="btn btn-ghost" id="btnPrevTop">Anterior</button>
@@ -52,50 +52,41 @@
     <!-- 4. Lugares (Recepción + Ceremonia opcional) -->
     <div class="card step <%= (step !== stepIndex('address')) ? 'hidden' : '' %>" data-step="<%= stepIndex('address') %>">
       <div class="grid md:grid-cols-2 gap-5">
-        <!-- Recepción -->
+        <!-- Recepción / Fiesta (usa los campos existentes para compatibilidad) -->
         <div>
-          <h3 class="font-semibold mb-2">Recepción</h3>
+          <h3 class="font-semibold mb-3">Recepción / Fiesta</h3>
           <label class="block mb-2">Lugar</label>
           <input class="rounded bg-black/30 px-3 py-2 w-full" name="venue" placeholder="Salón Principal" required>
           <label class="block mt-4 mb-2">Dirección</label>
           <input class="rounded bg-black/30 px-3 py-2 w-full" name="address" placeholder="Calle 123, Colonia, Ciudad" required>
           <label class="flex items-center gap-2 mt-4">
-            <input type="checkbox" name="show_map"> Mostrar mapa de recepción
+            <input type="checkbox" name="show_map"> Mostrar mapa de la recepción
           </label>
-          <div class="text-xs text-[var(--ring)] mt-1">El mapa se genera con Google Maps (embed).</div>
 
-          <div class="text-sm text-[var(--ring)] mt-4 mb-2">Vista del mapa (recepción)</div>
+          <div class="text-sm text-[var(--ring)] mt-4 mb-2">Vista de mapa (aprox.)</div>
           <div class="rounded overflow-hidden aspect-video bg-black/20">
-            <iframe id="mapFrameMain" class="w-full h-full" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <iframe id="mapReceptionFrame" class="w-full h-full" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
           </div>
         </div>
 
-        <!-- Ceremonia -->
+        <!-- Ceremonia / Templo (opcional, nuevos campos) -->
         <div>
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold mb-2">Ceremonia (opcional)</h3>
-            <label class="text-sm flex items-center gap-2">
-              <input type="checkbox" id="hasCeremony"> Agregar ceremonia
-            </label>
-          </div>
+          <h3 class="font-semibold mb-3">Ceremonia / Templo (opcional)</h3>
+          <label class="block mb-2">Lugar</label>
+          <input class="rounded bg-black/30 px-3 py-2 w-full" name="ceremony_venue" placeholder="Iglesia / Templo">
+          <label class="block mt-4 mb-2">Dirección</label>
+          <input class="rounded bg-black/30 px-3 py-2 w-full" name="ceremony_address" placeholder="Calle 456, Colonia, Ciudad">
+          <label class="flex items-center gap-2 mt-4">
+            <input type="checkbox" name="show_ceremony_map"> Mostrar mapa de la ceremonia
+          </label>
 
-          <div id="ceremonyFields" class="opacity-50 pointer-events-none">
-            <label class="block mb-2">Templo / Iglesia</label>
-            <input class="rounded bg-black/30 px-3 py-2 w-full" name="ceremony_venue" placeholder="Nombre de la iglesia">
-            <label class="block mt-4 mb-2">Dirección</label>
-            <input class="rounded bg-black/30 px-3 py-2 w-full" name="ceremony_address" placeholder="Calle y ciudad">
-            <label class="flex items-center gap-2 mt-4">
-              <input type="checkbox" name="show_map_ceremony"> Mostrar mapa de ceremonia
-            </label>
-            <div class="text-xs text-[var(--ring)] mt-1">Si no marcas “Agregar ceremonia”, estos campos se ignoran.</div>
-
-            <div class="text-sm text-[var(--ring)] mt-4 mb-2">Vista del mapa (ceremonia)</div>
-            <div class="rounded overflow-hidden aspect-video bg-black/20">
-              <iframe id="mapFrameCeremony" class="w-full h-full" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-            </div>
+          <div class="text-sm text-[var(--ring)] mt-4 mb-2">Vista de mapa (aprox.)</div>
+          <div class="rounded overflow-hidden aspect-video bg-black/20">
+            <iframe id="mapCeremonyFrame" class="w-full h-full" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
           </div>
         </div>
       </div>
+      <div class="text-xs text-[var(--ring)] mt-2">Los mapas se generan con Google Maps (embed) usando tus direcciones.</div>
     </div>
 
     <!-- 5. Vestimenta -->
@@ -121,7 +112,7 @@
       <!-- Mesa de Regalos -->
       <div class="card step <%= (step !== stepIndex('registry')) ? 'hidden' : '' %>" data-step="<%= stepIndex('registry') %>">
         <label class="block mb-2">Mesa de regalos</label>
-        <textarea class="rounded bg-black/30 px-3 py-2 w-full" rows="4" name="registry" placeholder="Pega enlaces (uno por línea) o instrucciones&#10;https://www.amazon.com/tu-lista&#10;https://mesaderegalos.com/mi-evento"></textarea>
+        <textarea class="rounded bg-black/30 px-3 py-2 w-full" rows="4" name="registry" placeholder="Pega aquí enlaces (uno por línea) o instrucciones&#10;https://www.amazon.com/tu-lista&#10;https://mesaderegalos.com/mi-evento"></textarea>
         <p class="text-xs text-[var(--ring)] mt-2">Se mostrarán como botones o texto en la invitación.</p>
       </div>
     <% } %>
@@ -182,38 +173,30 @@
 
 <script>
 (() => {
-  const wz      = document.getElementById('wz');
-  const steps   = [...document.querySelectorAll('.step')];
-  const chips   = [...document.querySelectorAll('[id^="chip-"]')];
-  const btnPrev = document.getElementById('btnPrevTop');
-  const btnNext = document.getElementById('btnNextTop');
-  const iframe  = document.getElementById('previewFrame');
+  const wz     = document.getElementById('wz');
+  const steps  = [...document.querySelectorAll('.step')];
+  const chips  = [...document.querySelectorAll('[id^="chip-"]')];
+  const btnPrev= document.getElementById('btnPrevTop');
+  const btnNext= document.getElementById('btnNextTop');
+  const iframe = document.getElementById('previewFrame');
 
   const PREVIEW_STEP = <%= PREVIEW_STEP %>;
   const TOTAL_STEPS  = <%= MAX_STEPS %>;
-  let   step         = <%= Number(step) || 1 %>;
+  let step = <%= Number(step) || 1 %>;
 
-  const SERVER_PLAN  = "<%= plan.code %>";
-  const LS_KEY       = 'crear_state_v3_' + SERVER_PLAN;
+  const SERVER_PLAN = "<%= plan.code %>";
+  const LS_KEY = 'crear_state_v3_' + SERVER_PLAN;
 
-  // Ceremonia toggle
-  const hasCeremonyChk = document.getElementById('hasCeremony');
-  const ceremonyBox    = document.getElementById('ceremonyFields');
-
-  function applyCeremonyUI(on){
-    ceremonyBox.classList.toggle('opacity-50', !on);
-    ceremonyBox.classList.toggle('pointer-events-none', !on);
-  }
-
-  // Persistencia
   function saveState(){
     const fd = new FormData(wz);
     const obj = {};
-    fd.forEach((v,k)=>{ if(k!=='plan_code') obj[k]=v; });
-    obj.show_map           = wz.elements['show_map']?.checked ? 'on' : '';
-    obj.show_map_ceremony  = wz.elements['show_map_ceremony']?.checked ? 'on' : '';
-    obj.has_ceremony       = hasCeremonyChk?.checked ? 'on' : '';
-    obj.music_autoplay     = wz.elements['music_autoplay']?.checked ? 'on' : '';
+    fd.forEach((v,k)=>{
+      if(k==='plan_code') return;
+      obj[k]=v;
+    });
+    obj.show_map          = wz.elements['show_map']?.checked ? 'on' : '';
+    obj.show_ceremony_map = wz.elements['show_ceremony_map']?.checked ? 'on' : '';
+    obj.music_autoplay    = wz.elements['music_autoplay']?.checked ? 'on' : '';
     localStorage.setItem(LS_KEY, JSON.stringify(obj));
   }
 
@@ -222,47 +205,37 @@
     try{
       const obj = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
       Object.entries(obj).forEach(([k,v])=>{
-        if (k==='plan_code') return;
-        if (k==='has_ceremony') { hasCeremonyChk.checked = (v==='on'); return; }
-        const el = wz.elements[k]; if(!el) return;
-        if (el.type === 'checkbox') el.checked = (v==='on'); else el.value = v;
+        const el = wz.elements[k];
+        if(!el || k==='plan_code') return;
+        if(el.type==='checkbox') el.checked=(v==='on');
+        else el.value=v;
       });
-      applyCeremonyUI(hasCeremonyChk.checked);
       updateMaps();
     }catch{}
   }
 
-  function updateMapFor(idInput, idChk, frameId){
-    const addr = (wz.elements[idInput]?.value || '').trim();
-    const show = !!wz.elements[idChk]?.checked;
-    const frame= document.getElementById(frameId);
+  function setMapSrc(frameId, address, show){
+    const frame = document.getElementById(frameId);
     if(!frame) return;
-    if(show && addr){
-      frame.src = `https://www.google.com/maps?q=${encodeURIComponent(addr)}&output=embed`;
+    if(show && address.trim()){
+      const q = encodeURIComponent(address.trim());
+      frame.src = `https://www.google.com/maps?q=${q}&output=embed`;
     }else{
       frame.removeAttribute('src');
     }
   }
 
   function updateMaps(){
-    updateMapFor('address', 'show_map', 'mapFrameMain');
-    if (hasCeremonyChk.checked){
-      updateMapFor('ceremony_address', 'show_map_ceremony', 'mapFrameCeremony');
-    }else{
-      const fr = document.getElementById('mapFrameCeremony');
-      if(fr) fr.removeAttribute('src');
-    }
+    setMapSrc('mapReceptionFrame', wz.elements['address']?.value || '', wz.elements['show_map']?.checked);
+    setMapSrc('mapCeremonyFrame',  wz.elements['ceremony_address']?.value || '', wz.elements['show_ceremony_map']?.checked);
   }
 
   function buildUrlEncodedFrom(form){
-    const fd = new FormData(form);
-    if(!fd.has('show_map'))          fd.set('show_map','');
-    if(!fd.has('show_map_ceremony')) fd.set('show_map_ceremony','');
-    if(!hasCeremonyChk.checked){
-      fd.set('ceremony_venue',''); fd.set('ceremony_address',''); fd.set('show_map_ceremony','');
-    }
-    if(!fd.has('music_autoplay'))    fd.set('music_autoplay','');
-    const up = new URLSearchParams();
+    const fd=new FormData(form);
+    if(!fd.has('show_map'))           fd.set('show_map','');
+    if(!fd.has('show_ceremony_map'))  fd.set('show_ceremony_map','');
+    if(!fd.has('music_autoplay'))     fd.set('music_autoplay','');
+    const up=new URLSearchParams();
     for(const [k,v] of fd.entries()) up.append(k,v);
     return up.toString();
   }
@@ -274,7 +247,7 @@
     if(!iframe) return;
     try{
       saveState();
-      const res = await fetch('/site/crear/preview',{
+      const res = await fetch('/site/crear/preview', {
         method:'POST',
         headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
         body: buildUrlEncodedFrom(wz),
@@ -288,7 +261,7 @@
     if (wz.elements['plan_code']) wz.elements['plan_code'].value = SERVER_PLAN;
     const form=document.getElementById('form-continue');
     form.innerHTML='';
-    const qs = new URLSearchParams(buildUrlEncodedFrom(wz));
+    const qs=new URLSearchParams(buildUrlEncodedFrom(wz));
     for(const [k,v] of qs.entries()){
       const i=document.createElement('input');
       i.type='hidden'; i.name=k; i.value=v;
@@ -299,38 +272,42 @@
 
   function showStep(n){
     step = Math.max(1, Math.min(TOTAL_STEPS, n));
-    steps.forEach(s=> s.classList.toggle('hidden', Number(s.dataset.step)!==step));
+    steps.forEach(s => s.classList.toggle('hidden', Number(s.dataset.step) !== step));
     chips.forEach((c,i)=>{
       c.classList.toggle('bg-white/10', (i+1)===step);
-      c.classList.toggle('opacity-60',  (i+1)>step);
+      c.classList.toggle('opacity-60',  (i+1)> step);
     });
     btnPrev.disabled = (step===1);
 
-    if(step===PREVIEW_STEP){ btnNext.textContent='Publicar y pagar'; renderPreview(); }
-    else { btnNext.textContent='Siguiente'; }
+    if(step === PREVIEW_STEP){
+      btnNext.textContent = 'Publicar y pagar';
+      renderPreview();
+    }else{
+      btnNext.textContent = 'Siguiente';
+    }
   }
 
-  // Handlers
+  // Navegación
   btnPrev.onclick = ()=>{ saveState(); showStep(step-1); };
-  btnNext.onclick = ()=>{ saveState(); (step===PREVIEW_STEP) ? publishAndPay() : showStep(step+1); };
+  btnNext.onclick = ()=>{ saveState(); (step === PREVIEW_STEP) ? publishAndPay() : showStep(step+1); };
 
-  wz.addEventListener('input',  e => {
-    if (['address','ceremony_address'].includes(e.target.name)) updateMaps();
-    if (step===PREVIEW_STEP) schedulePreview();
+  // Cambios que afectan preview / mapas
+  wz.addEventListener('input',  e => { 
+    if(['address','ceremony_address'].includes(e.target.name)) updateMaps();
+    if(step===PREVIEW_STEP) schedulePreview();
   });
-  wz.addEventListener('change', e => {
-    if (['show_map','show_map_ceremony'].includes(e.target.name)) updateMaps();
-    if (step===PREVIEW_STEP) schedulePreview();
+  wz.addEventListener('change', e => { 
+    if(['show_map','show_ceremony_map'].includes(e.target.name)) updateMaps();
+    if(step===PREVIEW_STEP) schedulePreview();
   });
 
-  hasCeremonyChk.addEventListener('change', ()=>{
-    applyCeremonyUI(hasCeremonyChk.checked);
-    updateMaps();
-    if (step===PREVIEW_STEP) schedulePreview(0);
+  // Cambiar plantilla refresca preview si ya estás en preview
+  wz.querySelectorAll('input[name="template_key"]').forEach(r=>{
+    r.addEventListener('change', ()=> { if(step===PREVIEW_STEP) schedulePreview(0); });
   });
 
   // Init
   loadState();
-  showStep(step);
+  showStep(<%= Number(step) || 1 %>);
 })();
 </script>

@@ -161,19 +161,19 @@ router.post('/site/crear/save', (req, res) => {
   P.time         = req.body.time ?? P.time
   P.date_iso     = toISO(P.date, P.time)
 
-  P.venue        = req.body.venue ?? P.venue
-  P.address      = req.body.address ?? P.address
-  P.show_map     = !!req.body.show_map
+  P.venue             = req.body.venue ?? P.venue;                 // recepción
+  P.address           = req.body.address ?? P.address;
+  P.show_map          = (typeof req.body.show_map !== 'undefined') ? 'on' : (P.show_map || '');
 
-  P.ceremony_venue     = req.body.ceremony_venue ?? P.ceremony_venue;
-  P.ceremony_address   = req.body.ceremony_address ?? P.ceremony_address;
-  P.show_map_ceremony  = !!req.body.show_map_ceremony;
+  P.ceremony_venue    = req.body.ceremony_venue ?? P.ceremony_venue;
+  P.ceremony_address  = req.body.ceremony_address ?? P.ceremony_address;
+  P.show_ceremony_map = (typeof req.body.show_ceremony_map !== 'undefined') ? 'on' : (P.show_ceremony_map || '');
 
   P.dress_code   = req.body.dress_code ?? P.dress_code
   P.message      = req.body.message ?? P.message
   P.template_key = req.body.template_key ?? P.template_key
   P.palette      = req.body.palette ?? P.palette
-  
+
   P.registry       = req.body.registry ?? P.registry;            // links o texto
   P.music_url      = req.body.music_url ?? P.music_url;          // URL mp3/stream
   P.music_autoplay = (typeof req.body.music_autoplay !== 'undefined')
@@ -235,13 +235,12 @@ const data = {
   title:        pref.title || 'Mi Evento',
   date_iso:     pref.date ? (new Date(`${pref.date}T${pref.time || '00:00'}:00`).toISOString()) : (pref.date_iso || new Date().toISOString()),
   // recepción (compatibilidad con tu UI anterior)
-  venue:        pref.venue || 'Por definir',
-  address:      pref.address || 'Por definir',
-  // ceremonia opcional
-  ceremony_venue:   pref.ceremony_venue || '',
-  ceremony_address: pref.ceremony_address || '',
-  show_map:         !!pref.show_map,            // recepción
-  show_map_ceremony:!!pref.show_map_ceremony,   // ceremonia
+  venue:           pref.venue || 'Por definir',
+  address:         pref.address || 'Por definir',
+  ceremony_venue:  pref.ceremony_venue || '',
+  ceremony_address:pref.ceremony_address || '',
+  show_map:        pref.show_map === 'on',
+  show_ceremony_map: pref.show_ceremony_map === 'on',
   section_order: JSON.stringify(order)
 };
 
