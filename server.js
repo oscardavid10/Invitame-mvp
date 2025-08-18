@@ -149,10 +149,12 @@ import site from './routes/site.js'
 import auth from './routes/auth.js'
 import panel from './routes/panel.js'
 import checkout from './routes/checkout.js'
+import admin from './routes/admin.js'
 app.use('/', site)
 app.use('/auth', auth)
 app.use('/panel', panel)
 app.use('/checkout', checkout)
+app.use('/admin', admin)
 
 // Pública por slug con fallbacks sólidos
 // /u/:slug
