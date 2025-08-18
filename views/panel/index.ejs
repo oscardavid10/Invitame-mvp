@@ -1,12 +1,14 @@
 <section class="container mx-auto px-5 py-10">
-  <h2 class="text-2xl font-bold mb-4">Tu invitación</h2>
-  <div class="card">
+  <h2 class="text-2xl font-bold mb-4">Tus invitaciones</h2>
+  <% invitations.forEach(inv => { %>
+  <div class="card mb-4">
     <p><b>Título:</b> <%= inv.title %></p>
     <p><b>Fecha:</b> <%= new Date(inv.date_iso).toLocaleString('es-MX',{dateStyle:'full', timeStyle:'short'}) %></p>
     <p><b>URL:</b> /u/<%= inv.slug %></p>
     <div class="mt-4 flex gap-2">
-      <a class="btn btn-ghost" href="/panel/wizard">Editar</a>
+      <a class="btn btn-ghost" href="/panel/wizard/<%= inv.id %>">Editar</a>
       <a class="btn btn-ghost" target="_blank" href="/u/<%= inv.slug %>">Abrir pública</a>
     </div>
   </div>
+  <% }) %>
 </section>
