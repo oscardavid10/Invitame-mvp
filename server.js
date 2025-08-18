@@ -99,6 +99,7 @@ app.use(express.json())
 app.use('/public', express.static(path.join(__dirname, 'public')))
 
 // inyecta DB
+// Inyecta DB + usuario en locals (después de session y antes de rutas)
 app.use(async (req, res, next) => {
   // DB en la request
   req.db = pool;
