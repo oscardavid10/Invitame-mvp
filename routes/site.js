@@ -135,32 +135,20 @@ const [templates] = await req.db.query(
 
 // GET /site/crear/step/:n  (navegación del wizard)
 router.get('/site/crear/step/:n', async (req, res) => {
-  const planCode = req.session.pref.plan_code || req.query.plan || 'basic';
-  const [[plan]] = await req.db.query('SELECT * FROM plans WHERE code=? LIMIT 1', [planCode]);
-  if (!plan) return res.redirect('/planes');
+const planCode = req.query.plan || req.session.pref.plan_code || 'basic'
+const [[plan]] = await req.db.query('SELECT * FROM plans WHERE code=? LIMIT 1', [planCode])
+if (!plan) return res.redirect('/planes')
 
-  const steps = buildSteps(plan);
+// asegura la sesión con el plan vigente
+req.session.pref.plan_code = plan.code
 
-  const [templates] = await req.db.query(
-    'SELECT key_name, name, category, preview_img FROM templates ORDER BY sort_order, id'
-  );
+const steps = buildSteps(plan) // <- tu helper dinámico
+const n = Number(req.params.n) || 1
+const step = Math.max(1, Math.min(steps.length, n)) // <- NADA de “8” fijo
 
-  if (!req.session.pref.template_key) {
-    req.session.pref.template_key = templates[0]?.key_name || 'default';
-  }
+// carga templates...
+res.render('site/crear', { plan, templates: templatesAllowed, cats, step, steps, title: 'Crear invitación' })
 
-  const cats = [...new Set(templates.map(t => t.category))];
-
-  const step = Math.max(1, Math.min(steps.length, Number(req.params.n) || 1));
-
-  res.render('site/crear', {
-    plan,
-    templates,
-    cats,
-    step,
-    steps,
-    title: 'Crear invitación'
-  });
 });
 
 

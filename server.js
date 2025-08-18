@@ -106,6 +106,7 @@ app.use((req, res, next) => {
   res.locals.tpl   = res.locals.tpl   || 'default';
   res.locals.uid   = req.session?.uid || null;
   res.locals.email = req.session?.email || null;
+  res.locals.hideNav = false;
   next();
 });
 

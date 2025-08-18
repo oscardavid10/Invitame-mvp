@@ -5,7 +5,6 @@
   </p>
 
   <% 
-    // 🔧 PASOS DINÁMICOS (una sola vez, sin duplicados)
     const STEPS = Array.isArray(steps) ? steps : [];
     const stepIndex = (k)=> (STEPS.findIndex(s=>s.key===k)+1);
     const PREVIEW_STEP = stepIndex('preview');
