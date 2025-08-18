@@ -1,9 +1,8 @@
 import { Router } from 'express'
-import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
 
-const upload = multer({ dest: 'uploads/' })
+
 const router = Router()
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'david_010@live.com.mx';
