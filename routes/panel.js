@@ -1,7 +1,11 @@
 import { Router } from 'express'
+import templatesRouter from './templates.js'
 const router = Router()
 
 function authed(req,res,next){ if(req.session.uid) return next(); res.redirect('/auth/login') }
+
+// Sub-ruta para gestionar plantillas
+router.use('/templates', authed, templatesRouter)
 
 router.get('/', authed, async (req,res)=>{
   const [[inv]] = await req.db.query('SELECT * FROM invitations WHERE user_id=? ORDER BY created_at DESC LIMIT 1', [req.session.uid])

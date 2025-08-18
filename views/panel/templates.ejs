@@ -1,0 +1,31 @@
+<section class="container mx-auto px-5 py-10">
+  <h2 class="text-2xl font-bold mb-4">Plantillas</h2>
+
+  <form class="card mb-6" method="post" action="/panel/templates">
+    <div class="grid gap-2">
+      <input name="key_name" class="px-3 py-2 rounded bg-black/30" placeholder="Clave" required />
+      <input name="name" class="px-3 py-2 rounded bg-black/30" placeholder="Nombre" required />
+      <input name="preview_img" class="px-3 py-2 rounded bg-black/30" placeholder="URL de preview" />
+      <textarea name="demo_theme_json" class="px-3 py-2 rounded bg-black/30" rows="3" placeholder='{"colors":{}}'></textarea>
+      <button class="btn btn-primary mt-2">Crear</button>
+    </div>
+  </form>
+
+  <ul class="grid gap-4">
+    <% templates.forEach(t => { %>
+      <li class="card">
+        <form method="post" action="/panel/templates/<%= t.id %>" class="grid gap-2">
+          <input name="name" value="<%= t.name %>" class="px-3 py-2 rounded bg-black/30" />
+          <input name="preview_img" value="<%= t.preview_img || '' %>" class="px-3 py-2 rounded bg-black/30" />
+          <textarea name="demo_theme_json" class="px-3 py-2 rounded bg-black/30" rows="3"><%= t.demo_theme_json %></textarea>
+          <div class="flex gap-2">
+            <button class="btn btn-primary">Actualizar</button>
+          </div>
+        </form>
+        <form method="post" action="/panel/templates/<%= t.id %>/delete" class="mt-2">
+          <button class="btn btn-ghost">Eliminar</button>
+        </form>
+      </li>
+    <% }) %>
+  </ul>
+</section>

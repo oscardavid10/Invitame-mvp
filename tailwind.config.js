@@ -2,7 +2,8 @@
 module.exports = {
   content: [
     './views/**/*.ejs',
-    './public/**/*.js'
+    './public/**/*.js',
+    './views/templates/**/*.{ejs,js}'
   ],
   safelist: [
     'container','mx-auto','px-5','py-10',
