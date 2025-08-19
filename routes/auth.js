@@ -1,6 +1,8 @@
 import { Router } from "express";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { pool } from "../utils/db.js";
+import { sendMail } from "../utils/mail.js";
 
 const router = Router();
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "david_010@live.com.mx";
@@ -65,6 +67,12 @@ router.post("/register", async (req, res) => {
       ]
     );
 
+        sendMail(
+      email,
+      "Bienvenido a Invitame",
+      `<p>Tu cuenta ha sido creada correctamente.</p>`
+    ).catch((e) => console.error("send welcome email", e));
+
     req.session.uid = ins.insertId;
     // trae el usuario para locals y flag de admin
     const [[u]] = await pool.query(
@@ -83,6 +91,94 @@ router.post("/register", async (req, res) => {
       });
   }
 });
+
+router.get("/forgot", (req, res) => {
+  res.render("site/forgot", {
+    title: "Recuperar contraseña",
+    error: null,
+    ok: null,
+  });
+});
+
+router.post("/forgot", async (req, res) => {
+  const { email = "" } = req.body;
+  if (!email)
+    return res.render("site/forgot", {
+      title: "Recuperar contraseña",
+      error: "Email requerido",
+      ok: null,
+    });
+  const [[user]] = await pool.query(
+    "SELECT id, email FROM users WHERE email=? LIMIT 1",
+    [email]
+  );
+  if (!user)
+    return res.render("site/forgot", {
+      title: "Recuperar contraseña",
+      error: "No existe usuario con ese email",
+      ok: null,
+    });
+  const token = crypto.randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + 1000 * 60 * 60);
+  await pool.query(
+    "INSERT INTO password_resets (user_id, token, expires_at) VALUES (?,?,?)",
+    [user.id, token, expires]
+  );
+  const base = `${req.protocol}://${req.get("host")}`;
+  const link = `${base}/auth/reset/${token}`;
+  sendMail(
+    user.email,
+    "Recuperar contraseña",
+    `<p>Haz click <a href="${link}">aquí</a> para restablecer tu contraseña.</p>`
+  ).catch((e) => console.error("send reset email", e));
+  res.render("site/forgot", {
+    title: "Recuperar contraseña",
+    error: null,
+    ok: "Revisa tu email para continuar",
+  });
+});
+
+router.get("/reset/:token", async (req, res) => {
+  const [[row]] = await pool.query(
+    "SELECT user_id FROM password_resets WHERE token=? AND expires_at>NOW()",
+    [req.params.token]
+  );
+  if (!row)
+    return res.render("site/reset", {
+      title: "Restablecer contraseña",
+      error: "Token inválido",
+      token: null,
+    });
+  res.render("site/reset", {
+    title: "Restablecer contraseña",
+    error: null,
+    token: req.params.token,
+  });
+});
+
+router.post("/reset/:token", async (req, res) => {
+  const { password = "" } = req.body;
+  const [[row]] = await pool.query(
+    "SELECT user_id FROM password_resets WHERE token=? AND expires_at>NOW()",
+    [req.params.token]
+  );
+  if (!row)
+    return res.status(400).render("site/reset", {
+      title: "Restablecer contraseña",
+      error: "Token inválido",
+      token: null,
+    });
+  const hash = await bcrypt.hash(password, 10);
+  await pool.query("UPDATE users SET password_hash=? WHERE id=?", [
+    hash,
+    row.user_id,
+  ]);
+  await pool.query("DELETE FROM password_resets WHERE token=?", [
+    req.params.token,
+  ]);
+  res.redirect("/auth/login");
+});
+
 
 router.post("/login", async (req, res) => {
   const { email, password, next } = req.body;
