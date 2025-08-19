@@ -8,6 +8,7 @@ import Stripe from "stripe";
 import cron from "node-cron";
 import MySQLStoreFactory from "express-mysql-session";
 import { pool } from "./utils/db.js";
+import { sendReceiptEmail } from "./utils/mail.js";
 // import webhooks from './routes/webhooks.js'  // ❌ quítalo si usas el inline
 
 const __filename = fileURLToPath(import.meta.url);
@@ -72,7 +73,7 @@ app.post(
           [orderId]
         );
         const [[order]] = await pool.query(
-          "SELECT o.*, u.email, p.code FROM orders o JOIN users u ON u.id=o.user_id JOIN plans p ON p.id=o.plan_id WHERE o.id=?",
+          "SELECT o.*, u.email, u.name, p.code, p.name AS plan_name, p.price_mxn FROM orders o JOIN users u ON u.id=o.user_id JOIN plans p ON p.id=o.plan_id WHERE o.id=?",
           [orderId]
         );
         const [[exists]] = await pool.query(
@@ -132,6 +133,16 @@ app.post(
               themeJson,
             ]
           );
+        }
+        try {
+          await sendReceiptEmail(order.email, {
+            name: order.name || "Usuario",
+            plan: order.plan_name || order.code,
+            amount: order.price_mxn,
+            date: new Date().toLocaleDateString("es-MX"),
+          });
+        } catch (e) {
+          console.error("send receipt email", e);
         }
       }
       res.json({ received: true });

@@ -2,7 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { pool } from "../utils/db.js";
-import { sendMail } from "../utils/mail.js";
+import { sendWelcomeEmail, sendResetEmail } from "../utils/mail.js";
 
 const router = Router();
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "david_010@live.com.mx";
@@ -67,11 +67,11 @@ router.post("/register", async (req, res) => {
       ]
     );
 
-        sendMail(
-      email,
-      "Bienvenido a Invitame",
-      `<p>Tu cuenta ha sido creada correctamente.</p>`
-    ).catch((e) => console.error("send welcome email", e));
+const base = `${req.protocol}://${req.get("host")}`;
+    sendWelcomeEmail(email, {
+      name: name.trim() || "Usuario",
+      loginUrl: `${base}/auth/login`,
+    }).catch((e) => console.error("send welcome email", e));
 
     req.session.uid = ins.insertId;
     // trae el usuario para locals y flag de admin
@@ -109,7 +109,7 @@ router.post("/forgot", async (req, res) => {
       ok: null,
     });
   const [[user]] = await pool.query(
-    "SELECT id, email FROM users WHERE email=? LIMIT 1",
+    "SELECT id, email, name FROM users WHERE email=? LIMIT 1",
     [email]
   );
   if (!user)
@@ -126,11 +126,10 @@ router.post("/forgot", async (req, res) => {
   );
   const base = `${req.protocol}://${req.get("host")}`;
   const link = `${base}/auth/reset/${token}`;
-  sendMail(
-    user.email,
-    "Recuperar contraseña",
-    `<p>Haz click <a href="${link}">aquí</a> para restablecer tu contraseña.</p>`
-  ).catch((e) => console.error("send reset email", e));
+sendResetEmail(user.email, {
+    name: user.name || "Usuario",
+    link,
+  }).catch((e) => console.error("send reset email", e));
   res.render("site/forgot", {
     title: "Recuperar contraseña",
     error: null,
