@@ -110,37 +110,90 @@ router.post('/wizard/slug', authed, async (req,res)=>{
 })
 
 
-router.post('/wizard/details', authed, async (req,res)=>{
-  const { invitation_id, venue, address, ceremony_venue, ceremony_address, show_map, show_ceremony_map, registry } = req.body
-  const showMap = !!show_map
-  const showCeremonyMap = !!show_ceremony_map
+router.post('/wizard/details', authed, async (req, res) => {
+  const {
+    invitation_id,
+    venue,
+    address,
+    ceremony_venue,
+    ceremony_address,
+    show_map,
+    show_ceremony_map,
+    registry,
+  } = req.body;
+
+  const showMap = !!show_map;
+  const showCeremonyMap = !!show_ceremony_map;
+
   await req.db.query(
     'UPDATE invitations SET venue=?, address=?, ceremony_venue=?, ceremony_address=?, show_map=?, show_ceremony_map=? WHERE id=? AND user_id=?',
-    [venue, address, ceremony_venue, ceremony_address, showMap ? 'on' : '', showCeremonyMap ? 'on' : '', invitation_id, req.session.uid]
-  )
-  const [[inv]] = await req.db.query('SELECT theme_json, section_order FROM invitations WHERE id=? AND user_id=?',[invitation_id, req.session.uid])
-  const current = (()=>{ try { return JSON.parse(inv.theme_json||'{}') } catch { return {} } })()
+    [
+      venue,
+      address,
+      ceremony_venue,
+      ceremony_address,
+      showMap ? 'on' : '',
+      showCeremonyMap ? 'on' : '',
+      invitation_id,
+      req.session.uid,
+    ],
+  );
+
+  const [[inv]] = await req.db.query(
+    'SELECT theme_json, section_order FROM invitations WHERE id=? AND user_id=?',
+    [invitation_id, req.session.uid],
+  );
+  const current = (() => {
+    try {
+      return JSON.parse(inv.theme_json || '{}');
+    } catch {
+      return {};
+    }
+  })();
+
   const mergedTheme = {
     ...current,
-    meta: { ...(current.meta||{}), registry: registry || '', show_map: showMap, show_ceremony_map: showCeremonyMap }
-  }
-  let order = []
-  try { order = JSON.parse(inv.section_order || '[]') } catch {}
+    meta: {
+      ...(current.meta || {}),
+      registry: registry || '',
+      show_map: showMap,
+      show_ceremony_map: showCeremonyMap,
+    },
+  };
+
+  let order = [];
+  try {
+    order = JSON.parse(inv.section_order || '[]');
+  } catch {}
   if (!Array.isArray(order) || !order.length) {
-    order = ["hero","detalles","mensaje","galeria","ubicacion","rsvp","footer"]
+    order = [
+      'hero',
+      'detalles',
+      'mensaje',
+      'galeria',
+      'ubicacion',
+      'rsvp',
+      'footer',
+    ];
   }
+
   if ((registry || '').trim()) {
     if (!order.includes('registry')) {
-      const idx = order.indexOf('ubicacion')
-      if (idx >= 0) order.splice(idx,0,'registry')
-      else order.push('registry')
+      const idx = order.indexOf('ubicacion');
+      if (idx >= 0) order.splice(idx, 0, 'registry');
+      else order.push('registry');
     }
   } else {
-    order = order.filter(s=>s!== 'registry')
+    order = order.filter((s) => s !== 'registry');
   }
-  await req.db.query('UPDATE invitations SET theme_json=?, section_order=? WHERE id=? AND user_id=?',[JSON.stringify(mergedTheme), JSON.stringify(order), invitation_id, req.session.uid])
-  res.redirect('/panel/wizard')
-})
+
+  await req.db.query(
+    'UPDATE invitations SET theme_json=?, section_order=? WHERE id=? AND user_id=?',
+    [JSON.stringify(mergedTheme), JSON.stringify(order), invitation_id, req.session.uid],
+  );
+
+  res.redirect('/panel/wizard');
+});
 
 
 
