@@ -1,5 +1,11 @@
 <section class="container mx-auto px-5 py-10 grid gap-6">
-  <% const theme = (()=>{ try { return JSON.parse(inv.theme_json||'{}') } catch { return {} } })(); %>
+  <% 
+    const theme = (()=>{ try { return JSON.parse(inv.theme_json||'{}') } catch { return {} } })();
+    const sections = ['hero','detalles','mensaje','galeria','ubicacion'];
+    if (plan?.allow_registry && (theme.meta?.registry || '').trim()) sections.push('registry');
+    if (plan?.allow_music && (theme.meta?.music_url || '').trim()) sections.push('music');
+    sections.push('rsvp','footer');
+  %>
   <div class="card">
     <h3 class="text-lg font-bold mb-3">1) Plantilla</h3>
     <div class="flex gap-2 mb-3">
@@ -50,7 +56,7 @@
     <h3 class="text-lg font-bold mb-3">4) Orden de secciones</h3>
     <p class="text-sm text-[var(--ring)] mb-3">Arrastra para reordenar.</p>
     <ul id="sec-list" class="grid md:grid-cols-3 gap-2">
-      <% (JSON.parse(inv.section_order||'["hero","detalles","mensaje","galeria","ubicacion","rsvp","footer"]')).forEach(s=>{ %>
+       <% (JSON.parse(inv.section_order || JSON.stringify(sections))).forEach(s=>{ %>
         <li class="drag-item card cursor-move" data-key="<%= s %>"><%= s %></li>
       <% }) %>
     </ul>
@@ -63,7 +69,6 @@
 <div class="card">
     <h3 class="text-lg font-bold mb-3">5) Animaciones de secciones</h3>
     <%
-      const sections = ['hero','detalles','mensaje','galeria','ubicacion','rsvp','footer'];
       const animIn = ['','fadeIn','fadeInUp','fadeInDown','fadeInLeft','fadeInRight','zoomIn'];
       const animOut = ['','fadeOut','fadeOutUp','fadeOutDown','fadeOutLeft','fadeOutRight','zoomOut'];
     %>

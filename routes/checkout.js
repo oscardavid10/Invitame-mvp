@@ -50,7 +50,10 @@ router.get('/start', async (req, res) => {
         show_map: String(!!pref.show_map),
         dress_code: pref.dress_code || '',
         message: pref.message || '',
-        palette: pref.palette || '{}'
+        palette: pref.palette || '{}',
+        registry: pref.registry || '',
+        music_url: pref.music_url || '',
+        music_autoplay: String(!!pref.music_autoplay)
       },
       success_url: `${process.env.BASE_URL}/site/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.BASE_URL}/site/crear?plan=${p.code}`

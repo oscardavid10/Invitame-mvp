@@ -37,7 +37,7 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
 
       // datos de la orden/usuario
       const [[order]] = await req.db.query(
-        'SELECT o.*, u.email, p.code FROM orders o JOIN users u ON u.id=o.user_id JOIN plans p ON p.id=o.plan_id WHERE o.id=?',
+           'SELECT o.*, u.email, p.code, p.allow_registry, p.allow_music FROM orders o JOIN users u ON u.id=o.user_id JOIN plans p ON p.id=o.plan_id WHERE o.id=?',
         [orderId]
       )
 
@@ -54,6 +54,9 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
         const show_map = s.metadata?.show_map === 'true'
         const dress_code = s.metadata?.dress_code || ''
         const message = s.metadata?.message || ''
+                const registry = s.metadata?.registry || ''
+        const music_url = s.metadata?.music_url || ''
+        const music_autoplay = s.metadata?.music_autoplay === 'true'
 
         // plantilla de BD
         const [[tpl]] = await req.db.query('SELECT * FROM templates WHERE key_name=? LIMIT 1', [template_key])
@@ -65,10 +68,14 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
           ...base,
           colors: { ...base.colors, ...pal },
           copy:   { ...base.copy, intro: message || base.copy.intro },
-          meta:   { ...base.meta, show_map, dress_code }
+          meta:   { ...base.meta, show_map, dress_code, registry, music_url, music_autoplay }
         }
         const themeJson = JSON.stringify(theme)
-        const sectionOrder = JSON.stringify(["hero","detalles","mensaje","galeria","ubicacion","rsvp","footer"])
+                const secArr = ["hero","detalles","mensaje","galeria","ubicacion"]
+        if (order.allow_registry && registry.trim()) secArr.push("registry")
+        if (order.allow_music && music_url.trim()) secArr.push("music")
+        secArr.push("rsvp","footer")
+        const sectionOrder = JSON.stringify(secArr)
 
         // inserta invitación
         await req.db.query(
