@@ -2,7 +2,12 @@
   <div class="container mx-auto px-5 h-12 flex items-center justify-between">
     <a href="/" class="font-display text-lg">Invítame</a>
     <div class="flex items-center gap-2">
-      <% if (uid) { %>
+      <% if (typeof isWizard !== 'undefined') { %>
+        <a href="/panel/preview/<%= inv.id %>" class="btn btn-primary">Vista previa</a>
+        <% if (inv.status === 'active') { %>
+          <a href="/u/<%= inv.slug %>" class="btn btn-ghost">Compartir</a>
+        <% } %>
+      <% } else if (uid) { %>
         <% if (user?.is_admin) { %>
           <a href="/admin/templates" class="btn btn-ghost">Admin</a>
         <% } else { %>

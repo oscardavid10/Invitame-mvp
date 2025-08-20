@@ -24,37 +24,34 @@
         <% }) %>
       </div>
     <% }) %>
-    <form id="form-tpl" method="post" action="/panel/wizard/template">
+    <form id="form-tpl" method="post" action="/panel/wizard/template" class="auto-save">
       <input type="hidden" name="invitation_id" value="<%= inv.id %>">
-      <button class="btn btn-primary">Guardar plantilla</button>
     </form>
   </div>
 
 
   <div class="card">
     <h3 class="text-lg font-bold mb-3">2) URL (slug)</h3>
-    <form method="post" action="/panel/wizard/slug" class="flex gap-2 items-center">
+     <form method="post" action="/panel/wizard/slug" class="flex gap-2 items-center auto-save">
       <input type="hidden" name="invitation_id" value="<%= inv.id %>"/>
       <span>/u/</span>
       <input class="px-3 py-2 rounded bg-black/30" name="slug" value="<%= inv.slug %>" <%= inv.slug_locked?'disabled':'' %> required />
-      <button class="btn btn-primary" <%= inv.slug_locked?'disabled':'' %>>Guardar</button>
       <% if (inv.slug_locked){ %><span class="text-sm text-red-300 ml-2">Bloqueado</span><% } %>
     </form>
   </div>
 
   <div class="card">
     <h3 class="text-lg font-bold mb-3">3) Fecha del evento</h3>
-    <form method="post" action="/panel/wizard/date" class="flex gap-2 items-center">
+     <form method="post" action="/panel/wizard/date" class="flex gap-2 items-center auto-save">
       <input type="hidden" name="invitation_id" value="<%= inv.id %>"/>
       <input class="px-3 py-2 rounded bg-black/30" name="date_iso" type="datetime-local" value="<%= inv.date_iso.substring(0,16) %>" <%= inv.date_locked?'disabled':'' %> required />
-      <button class="btn btn-primary" <%= inv.date_locked?'disabled':'' %>>Guardar (se bloquea)</button>
       <% if (inv.date_locked){ %><span class="text-sm text-red-300 ml-2">Fecha bloqueada</span><% } %>
     </form>
   </div>
 
   <div class="card">
 <h3 class="text-lg font-bold mb-3">4) Detalles del evento</h3>
-    <form method="post" action="/panel/wizard/details" class="grid md:grid-cols-2 gap-4">
+      <form method="post" action="/panel/wizard/details" class="grid md:grid-cols-2 gap-4 auto-save">
       <input type="hidden" name="invitation_id" value="<%= inv.id %>">
       <div>
         <label class="block mb-1">Recepción - Lugar</label>
@@ -81,9 +78,6 @@
         <p class="text-xs text-[var(--ring)] mt-2">Pega enlaces (uno por línea) o instrucciones.</p>
       </div>
       <% } %>
-      <div class="md:col-span-2 mt-4">
-        <button class="btn btn-primary">Guardar detalles</button>
-      </div>
     </form>
   </div>
 
@@ -95,10 +89,9 @@
         <li class="drag-item card cursor-move" data-key="<%= s %>"><%= s %></li>
       <% }) %>
     </ul>
-    <form method="post" action="/panel/wizard/sections" class="mt-3">
+    <form method="post" action="/panel/wizard/sections" class="mt-3 auto-save">
       <input type="hidden" name="invitation_id" value="<%= inv.id %>">
       <input type="hidden" name="order" id="order">
-      <button class="btn btn-primary">Guardar orden</button>
     </form>
   </div>
 <div class="card">
@@ -107,7 +100,7 @@
       const animIn = ['','fadeIn','fadeInUp','fadeInDown','fadeInLeft','fadeInRight','zoomIn'];
       const animOut = ['','fadeOut','fadeOutUp','fadeOutDown','fadeOutLeft','fadeOutRight','zoomOut'];
     %>
-    <form id="form-anim" method="post" action="/panel/wizard/theme" class="grid md:grid-cols-2 gap-4">
+   <form id="form-anim" method="post" action="/panel/wizard/theme" class="grid md:grid-cols-2 gap-4 auto-save">
       <input type="hidden" name="invitation_id" value="<%= inv.id %>">
       <input type="hidden" name="theme_json" id="theme_json" />
       <% sections.forEach(sec=>{ const cur = theme.animations?.[sec] || {}; %>
@@ -127,32 +120,64 @@
           </div>
         </div>
       <% }) %>
-      <div class="md:col-span-2 mt-3">
-        <button class="btn btn-primary">Guardar animaciones</button>
-      </div>
     </form>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script>
-    const list = document.getElementById('sec-list');
-    new Sortable(list, { animation: 150 });
-    document.querySelector('form[action="/panel/wizard/sections"]').addEventListener('submit', (e)=>{
-      const order = [...list.querySelectorAll('.drag-item')].map(li=>li.dataset.key);
-      document.getElementById('order').value = order.join(',');
-    });
+    const debounce = (fn, delay = 600) => {
+      let t; return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn(...args), delay); };
+    };
 
-    const animForm = document.getElementById('form-anim');
-    animForm?.addEventListener('submit', (e)=>{
-      const anims = {};
-      animForm.querySelectorAll('select').forEach(sel=>{
-        const sec = sel.dataset.sec;
-        const type = sel.dataset.type;
-        const val = sel.value;
-        if(!anims[sec]) anims[sec] = {};
-        if(val) anims[sec][type] = val;
+    const chip = document.createElement('div');
+    chip.className = 'fixed top-16 right-5 bg-black/80 text-white text-sm px-3 py-1 rounded-full hidden';
+    document.body.appendChild(chip);
+    function setStatus(text, cls){
+      chip.textContent = text;
+      chip.className = 'fixed top-16 right-5 text-sm px-3 py-1 rounded-full ' + cls;
+      chip.classList.remove('hidden');
+      if(text==='Guardado') setTimeout(()=>chip.classList.add('hidden'),2000);
+    }
+
+    function autoSave(form, prepare){
+      const send = debounce(()=>{
+        prepare?.();
+        setStatus('Guardando...','bg-yellow-500 text-black');
+        fetch(form.action, {method:'POST', body:new FormData(form), headers:{'Accept':'application/json'}})
+          .then(r=>{ if(r.ok) setStatus('Guardado','bg-green-600'); else throw new Error(); })
+          .catch(()=>setStatus('Error · Reintentar','bg-red-600'));
+      },600);
+      form.querySelectorAll('input,textarea,select').forEach(el=>{
+        el.addEventListener('input', send);
+        el.addEventListener('change', send);
       });
-      document.getElementById('theme_json').value = JSON.stringify({ animations: anims });
+      form.addEventListener('submit', e=>e.preventDefault());
+      return send;
+    }
+
+    const list = document.getElementById('sec-list');
+    document.querySelectorAll('form.auto-save').forEach(form=>{
+      if(form.getAttribute('action') === '/panel/wizard/sections'){
+        const send = autoSave(form, ()=>{
+          const order = [...list.querySelectorAll('.drag-item')].map(li=>li.dataset.key);
+          document.getElementById('order').value = order.join(',');
+        });
+        new Sortable(list, { animation:150, onSort: send });
+      } else if(form.id === 'form-anim'){
+        autoSave(form, ()=>{
+          const anims = {};
+          form.querySelectorAll('select').forEach(sel=>{
+            const sec = sel.dataset.sec;
+            const type = sel.dataset.type;
+            const val = sel.value;
+            if(!anims[sec]) anims[sec] = {};
+            if(val) anims[sec][type] = val;
+          });
+          document.getElementById('theme_json').value = JSON.stringify({ animations: anims });
+        });
+      } else {
+        autoSave(form);
+      }
     });
   </script>
 </section>

@@ -65,7 +65,7 @@ router.get('/wizard/:id?', authed, async (req,res)=>{
       : 'SELECT * FROM templates ORDER BY category,id'
   )
   const cats = [...new Set(templates.map(t=>t.category))]
- res.render('panel/wizard', { templates, cats, inv, plan })
+ res.render('panel/wizard', { templates, cats, inv, plan, isWizard: true })
 })
 
 
@@ -76,6 +76,7 @@ router.post('/wizard/sections', authed, async (req,res)=>{
   const arr = Array.isArray(order) ? order : String(order||'').split(',').map(s=>s.trim()).filter(Boolean)
   if (!arr.length) return res.status(400).send('Orden inválido')
   await req.db.query('UPDATE invitations SET section_order=? WHERE id=? AND user_id=?', [JSON.stringify(arr), invitation_id, req.session.uid])
+  if (req.headers.accept === 'application/json') return res.json({ ok: true })
   res.redirect('/panel/wizard')
 })
 
@@ -83,6 +84,7 @@ router.post('/wizard/sections', authed, async (req,res)=>{
 router.post('/wizard/template', authed, async (req,res)=>{
   const { invitation_id, template_key } = req.body
   await req.db.query('UPDATE invitations SET template_key=? WHERE id=? AND user_id=?', [template_key, invitation_id, req.session.uid])
+  if (req.headers.accept === 'application/json') return res.json({ ok: true })
   res.redirect('/panel/wizard')
 })
 
@@ -92,6 +94,7 @@ router.post('/wizard/date', authed, async (req,res)=>{
   if(!inv) return res.status(404).send('Invitación no encontrada')
   if(inv.date_locked) return res.status(400).send('La fecha ya está bloqueada y no puede cambiarse')
   await req.db.query('UPDATE invitations SET date_iso=?, date_locked=1, slug_locked=1 WHERE id=? AND user_id=?', [date_iso, invitation_id, req.session.uid])
+   if (req.headers.accept === 'application/json') return res.json({ ok: true })
   res.redirect('/panel')
 })
 
@@ -102,6 +105,7 @@ router.post('/wizard/slug', authed, async (req,res)=>{
   if(inv.slug_locked) return res.status(400).send('El slug/URL ya está bloqueado')
   try {
     await req.db.query('UPDATE invitations SET slug=? WHERE id=? AND user_id=?', [slug, invitation_id, req.session.uid])
+     if (req.headers.accept === 'application/json') return res.json({ ok: true })
     res.redirect('/panel/wizard')
   } catch (e){
     if(e.code==='ER_DUP_ENTRY') return res.status(400).send('Ese slug ya existe')
@@ -192,6 +196,7 @@ router.post('/wizard/details', authed, async (req, res) => {
     [JSON.stringify(mergedTheme), JSON.stringify(order), invitation_id, req.session.uid],
   );
 
+  if (req.headers.accept === 'application/json') return res.json({ ok: true })
   res.redirect('/panel/wizard');
 });
 
@@ -213,6 +218,7 @@ router.post('/wizard/theme', authed, async (req,res)=>{
     animations: {...(current.animations||{}), ...(incoming.animations||{})}
   }
   await req.db.query('UPDATE invitations SET theme_json=? WHERE id=? AND user_id=?', [JSON.stringify(merged), invitation_id, req.session.uid])
+  if (req.headers.accept === 'application/json') return res.json({ ok: true })
   res.redirect('/panel')
 })
 
