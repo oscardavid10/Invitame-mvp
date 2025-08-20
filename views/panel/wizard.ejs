@@ -53,7 +53,42 @@
   </div>
 
   <div class="card">
-    <h3 class="text-lg font-bold mb-3">4) Orden de secciones</h3>
+<h3 class="text-lg font-bold mb-3">4) Detalles del evento</h3>
+    <form method="post" action="/panel/wizard/details" class="grid md:grid-cols-2 gap-4">
+      <input type="hidden" name="invitation_id" value="<%= inv.id %>">
+      <div>
+        <label class="block mb-1">Recepción - Lugar</label>
+        <input class="px-3 py-2 rounded bg-black/30 w-full" name="venue" value="<%= inv.venue %>">
+        <label class="block mt-4 mb-1">Dirección</label>
+        <input class="px-3 py-2 rounded bg-black/30 w-full" name="address" value="<%= inv.address %>">
+        <label class="flex items-center gap-2 mt-2">
+          <input type="checkbox" name="show_map" <%= (theme.meta?.show_map ?? inv.show_map) ? 'checked' : '' %> /> Mostrar mapa
+        </label>
+      </div>
+      <div>
+        <label class="block mb-1">Ceremonia - Lugar</label>
+        <input class="px-3 py-2 rounded bg-black/30 w-full" name="ceremony_venue" value="<%= inv.ceremony_venue || '' %>">
+        <label class="block mt-4 mb-1">Dirección</label>
+        <input class="px-3 py-2 rounded bg-black/30 w-full" name="ceremony_address" value="<%= inv.ceremony_address || '' %>">
+        <label class="flex items-center gap-2 mt-2">
+          <input type="checkbox" name="show_ceremony_map" <%= (theme.meta?.show_ceremony_map ?? inv.show_ceremony_map) ? 'checked' : '' %> /> Mostrar mapa
+        </label>
+      </div>
+      <% if (plan?.allow_registry) { %>
+      <div class="md:col-span-2">
+        <label class="block mb-1 mt-4">Mesa de regalos</label>
+        <textarea class="rounded bg-black/30 px-3 py-2 w-full" rows="3" name="registry"><%= theme.meta?.registry || '' %></textarea>
+        <p class="text-xs text-[var(--ring)] mt-2">Pega enlaces (uno por línea) o instrucciones.</p>
+      </div>
+      <% } %>
+      <div class="md:col-span-2 mt-4">
+        <button class="btn btn-primary">Guardar detalles</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 class="text-lg font-bold mb-3">5) Orden de secciones</h3>
     <p class="text-sm text-[var(--ring)] mb-3">Arrastra para reordenar.</p>
     <ul id="sec-list" class="grid md:grid-cols-3 gap-2">
        <% (JSON.parse(inv.section_order || JSON.stringify(sections))).forEach(s=>{ %>
@@ -67,7 +102,7 @@
     </form>
   </div>
 <div class="card">
-    <h3 class="text-lg font-bold mb-3">5) Animaciones de secciones</h3>
+    <h3 class="text-lg font-bold mb-3">6) Animaciones de secciones</h3>
     <%
       const animIn = ['','fadeIn','fadeInUp','fadeInDown','fadeInLeft','fadeInRight','zoomIn'];
       const animOut = ['','fadeOut','fadeOutUp','fadeOutDown','fadeOutLeft','fadeOutRight','zoomOut'];
