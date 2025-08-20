@@ -264,7 +264,13 @@ app.get("/u/:slug", async (req, res) => {
   }
 
   const view = "templates/default";
-  res.render("public", { data, theme: merged, view, tpl: data.template_key });
+    res.render("public", {
+    data,
+    theme: merged,
+    view,
+    tpl: data.template_key,
+    hideNav: true,
+  });
 });
 
 // Cron de auto-archivo (03:15 diario)
