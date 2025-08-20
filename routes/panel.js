@@ -18,6 +18,11 @@ router.get('/', authed, async (req,res)=>{
 
   const [invitations] = await req.db.query(
     "SELECT * FROM invitations WHERE user_id=? AND status='active' ORDER BY created_at DESC",
+    `SELECT i.*, p.name AS plan_name, p.code AS plan_code, p.price_mxn AS plan_price_mxn
+     FROM invitations i
+     JOIN orders o ON o.id=i.order_id
+     JOIN plans p ON p.id=o.plan_id
+     WHERE i.user_id=? AND i.status='active' ORDER BY i.created_at DESC`,
     [req.session.uid]
   )
 
@@ -47,7 +52,7 @@ router.get('/wizard/:id?', authed, async (req,res)=>{
       [req.session.uid]
     )
   }
-    if (!inv) return res.redirect('/panel')
+  if (!inv) return res.redirect('/panel')
   const [[plan]] = await req.db.query(
     'SELECT p.* FROM orders o JOIN plans p ON p.id=o.plan_id WHERE o.id=? AND o.user_id=?',
     [inv.order_id, req.session.uid]
@@ -61,7 +66,7 @@ router.get('/wizard/:id?', authed, async (req,res)=>{
       : 'SELECT * FROM templates ORDER BY category,id'
   )
   const cats = [...new Set(templates.map(t=>t.category))]
-   const theme = (()=>{ try { return JSON.parse(inv?.theme_json||'{}') } catch { return {} } })()
+const theme = (()=>{ try { return JSON.parse(inv?.theme_json||'{}') } catch { return {} } })()
   res.render('panel/wizard', { templates, cats, inv, plan, theme })
 })
 
