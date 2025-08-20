@@ -1,3 +1,4 @@
-<footer class="py-10 text-center text-[var(--muted)]">
+<% const anim = theme.animations?.footer || {}; const animClass = (anim.in || anim.out) ? `animate__animated ${anim.in?`animate__${anim.in}`:''} ${anim.out?`animate__${anim.out}`:''}` : '' %>
+<footer class="py-10 text-center text-[var(--muted)] <%= animClass %>">
   © <%= new Date().getFullYear() %> <%= data.title %>
 </footer>

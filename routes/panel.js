@@ -15,7 +15,7 @@ router.use('/templates', authed, ensureAdmin, templatesRouter)
 
 router.get('/', authed, async (req,res)=>{
   if (req.session.is_admin) return res.redirect('/admin'); // admins al dashboard de admin
-  
+
   const [invitations] = await req.db.query(
     "SELECT * FROM invitations WHERE user_id=? AND status='active' ORDER BY created_at DESC",
     [req.session.uid]
@@ -57,7 +57,8 @@ router.get('/wizard/:id?', authed, async (req,res)=>{
     )
   }
   const cats = [...new Set(templates.map(t=>t.category))]
-  res.render('panel/wizard', { templates, cats, inv, plan })
+   const theme = (()=>{ try { return JSON.parse(inv?.theme_json||'{}') } catch { return {} } })()
+  res.render('panel/wizard', { templates, cats, inv, plan, theme })
 })
 
 // helper (puedes ponerlo en middleware)
@@ -122,7 +123,8 @@ router.post('/wizard/theme', authed, async (req,res)=>{
     colors: {...(current.colors||{}), ...(incoming.colors||{})},
     fonts:  {...(current.fonts||{}),  ...(incoming.fonts||{})},
     media:  {...(current.media||{}),  ...(incoming.media||{})},
-    copy:   {...(current.copy||{}),   ...(incoming.copy||{})}
+     copy:   {...(current.copy||{}),   ...(incoming.copy||{})},
+    animations: {...(current.animations||{}), ...(incoming.animations||{})}
   }
   await req.db.query('UPDATE invitations SET theme_json=? WHERE id=? AND user_id=?', [JSON.stringify(merged), invitation_id, req.session.uid])
   res.redirect('/panel')

@@ -1,4 +1,5 @@
 <section class="container mx-auto px-5 py-10 grid gap-6">
+  <% const theme = (()=>{ try { return JSON.parse(inv.theme_json||'{}') } catch { return {} } })(); %>
   <div class="card">
     <h3 class="text-lg font-bold mb-3">1) Plantilla</h3>
     <div class="flex gap-2 mb-3">
@@ -59,6 +60,38 @@
       <button class="btn btn-primary">Guardar orden</button>
     </form>
   </div>
+<div class="card">
+    <h3 class="text-lg font-bold mb-3">5) Animaciones de secciones</h3>
+    <%
+      const sections = ['hero','detalles','mensaje','galeria','ubicacion','rsvp','footer'];
+      const animIn = ['','fadeIn','fadeInUp','fadeInDown','fadeInLeft','fadeInRight','zoomIn'];
+      const animOut = ['','fadeOut','fadeOutUp','fadeOutDown','fadeOutLeft','fadeOutRight','zoomOut'];
+    %>
+    <form id="form-anim" method="post" action="/panel/wizard/theme" class="grid md:grid-cols-2 gap-4">
+      <input type="hidden" name="invitation_id" value="<%= inv.id %>">
+      <input type="hidden" name="theme_json" id="theme_json" />
+      <% sections.forEach(sec=>{ const cur = theme.animations?.[sec] || {}; %>
+        <div>
+          <div class="font-semibold mb-1 capitalize"><%= sec %></div>
+          <div class="grid grid-cols-2 gap-2">
+            <select class="px-3 py-2 rounded bg-black/30 w-full" data-sec="<%= sec %>" data-type="in">
+              <% animIn.forEach(opt=>{ %>
+                <option value="<%= opt %>" <%= cur.in===opt ? 'selected' : '' %>><%= opt || 'Sin entrada' %></option>
+              <% }) %>
+            </select>
+            <select class="px-3 py-2 rounded bg-black/30 w-full" data-sec="<%= sec %>" data-type="out">
+              <% animOut.forEach(opt=>{ %>
+                <option value="<%= opt %>" <%= cur.out===opt ? 'selected' : '' %>><%= opt || 'Sin salida' %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+      <% }) %>
+      <div class="md:col-span-2 mt-3">
+        <button class="btn btn-primary">Guardar animaciones</button>
+      </div>
+    </form>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <script>
@@ -67,6 +100,19 @@
     document.querySelector('form[action="/panel/wizard/sections"]').addEventListener('submit', (e)=>{
       const order = [...list.querySelectorAll('.drag-item')].map(li=>li.dataset.key);
       document.getElementById('order').value = order.join(',');
+    });
+
+    const animForm = document.getElementById('form-anim');
+    animForm?.addEventListener('submit', (e)=>{
+      const anims = {};
+      animForm.querySelectorAll('select').forEach(sel=>{
+        const sec = sel.dataset.sec;
+        const type = sel.dataset.type;
+        const val = sel.value;
+        if(!anims[sec]) anims[sec] = {};
+        if(val) anims[sec][type] = val;
+      });
+      document.getElementById('theme_json').value = JSON.stringify({ animations: anims });
     });
   </script>
 </section>

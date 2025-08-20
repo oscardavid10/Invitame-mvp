@@ -240,6 +240,7 @@ app.get("/u/:slug", async (req, res) => {
     copy: { intro: "Reserva la fecha y acompáñanos." },
     hero: { mode: "video", overlay: "rgba(0,0,0,.45)" },
     layout: {},
+    animations: {},
   };
   let theme = {};
   try {
@@ -253,6 +254,7 @@ app.get("/u/:slug", async (req, res) => {
     copy: { ...base.copy, ...(theme.copy || {}) },
     hero: { ...base.hero, ...(theme.hero || {}) },
     layout: { ...base.layout, ...(theme.layout || {}) },
+    animations: { ...base.animations, ...(theme.animations || {}) },
   };
 
   // Si la plantilla define orden de secciones, úsalo
