@@ -120,7 +120,7 @@ app.post(
           });
 
           await pool.query(
-            "INSERT INTO invitations (user_id, order_id, template_key, slug, title, date_iso, venue, address, theme_json) VALUES (?,?,?,?,?,?,?,?,?)",
+    "INSERT INTO invitations (user_id, order_id, template_key, slug, title, date_iso, venue, address, theme_json, status) VALUES (?,?,?,?,?,?,?,?,?,?)",
             [
               order.user_id,
               order.id,
@@ -131,6 +131,7 @@ app.post(
               venue,
               address,
               themeJson,
+              "active",
             ]
           );
         }
