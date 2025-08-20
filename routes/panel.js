@@ -88,7 +88,169 @@ router.post('/wizard/template', authed, async (req,res)=>{
 
 router.post('/wizard/date', authed, async (req,res)=>{
   const { invitation_id, date_iso } = req.body
-  const [[inv]] = await req.db.query('SELECT date_locked FROM invitations WHERE id=? AND user_id=?', [invitation_id, req.session.uid])
+  const [[inv]] = await req.db.query('SELECT date_locked FROM invitations WHERE id=? AND us (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/routes/panel.js b/routes/panel.js
+index d5ff5edcf7a31be019a8c23e874dd86d4467bfbb..d6315ee3bf1bc37f1b9f30f9d45aedf875b9aeb3 100644
+--- a/routes/panel.js
++++ b/routes/panel.js
+@@ -88,81 +88,134 @@ router.post('/wizard/template', authed, async (req,res)=>{
+ 
+ router.post('/wizard/date', authed, async (req,res)=>{
+   const { invitation_id, date_iso } = req.body
+   const [[inv]] = await req.db.query('SELECT date_locked FROM invitations WHERE id=? AND user_id=?', [invitation_id, req.session.uid])
+   if(!inv) return res.status(404).send('Invitación no encontrada')
+   if(inv.date_locked) return res.status(400).send('La fecha ya está bloqueada y no puede cambiarse')
+   await req.db.query('UPDATE invitations SET date_iso=?, date_locked=1, slug_locked=1 WHERE id=? AND user_id=?', [date_iso, invitation_id, req.session.uid])
+   res.redirect('/panel')
+ })
+ 
+ router.post('/wizard/slug', authed, async (req,res)=>{
+   const { invitation_id, slug } = req.body
+   const [[inv]] = await req.db.query('SELECT slug_locked FROM invitations WHERE id=? AND user_id=?', [invitation_id, req.session.uid])
+   if(!inv) return res.status(404).send('Invitación no encontrada')
+   if(inv.slug_locked) return res.status(400).send('El slug/URL ya está bloqueado')
+   try {
+     await req.db.query('UPDATE invitations SET slug=? WHERE id=? AND user_id=?', [slug, invitation_id, req.session.uid])
+     res.redirect('/panel/wizard')
+   } catch (e){
+     if(e.code==='ER_DUP_ENTRY') return res.status(400).send('Ese slug ya existe')
+     throw e
+   }
+ })
+ 
+ 
+-router.post('/wizard/details', authed, async (req,res)=>{
+-  const { invitation_id, venue, address, ceremony_venue, ceremony_address, show_map, show_ceremony_map, registry } = req.body
+-  const showMap = !!show_map
+-  const showCeremonyMap = !!show_ceremony_map
++router.post('/wizard/details', authed, async (req, res) => {
++  const {
++    invitation_id,
++    venue,
++    address,
++    ceremony_venue,
++    ceremony_address,
++    show_map,
++    show_ceremony_map,
++    registry,
++  } = req.body;
++
++  const showMap = !!show_map;
++  const showCeremonyMap = !!show_ceremony_map;
++
+   await req.db.query(
+     'UPDATE invitations SET venue=?, address=?, ceremony_venue=?, ceremony_address=?, show_map=?, show_ceremony_map=? WHERE id=? AND user_id=?',
+-    [venue, address, ceremony_venue, ceremony_address, showMap ? 'on' : '', showCeremonyMap ? 'on' : '', invitation_id, req.session.uid]
+-  )
+-  const [[inv]] = await req.db.query('SELECT theme_json, section_order FROM invitations WHERE id=? AND user_id=?',[invitation_id, req.session.uid])
+-  const current = (()=>{ try { return JSON.parse(inv.theme_json||'{}') } catch { return {} } })()
++    [
++      venue,
++      address,
++      ceremony_venue,
++      ceremony_address,
++      showMap ? 'on' : '',
++      showCeremonyMap ? 'on' : '',
++      invitation_id,
++      req.session.uid,
++    ],
++  );
++
++  const [[inv]] = await req.db.query(
++    'SELECT theme_json, section_order FROM invitations WHERE id=? AND user_id=?',
++    [invitation_id, req.session.uid],
++  );
++  const current = (() => {
++    try {
++      return JSON.parse(inv.theme_json || '{}');
++    } catch {
++      return {};
++    }
++  })();
++
+   const mergedTheme = {
+     ...current,
+-    meta: { ...(current.meta||{}), registry: registry || '', show_map: showMap, show_ceremony_map: showCeremonyMap }
+-  }
+-  let order = []
+-  try { order = JSON.parse(inv.section_order || '[]') } catch {}
++    meta: {
++      ...(current.meta || {}),
++      registry: registry || '',
++      show_map: showMap,
++      show_ceremony_map: showCeremonyMap,
++    },
++  };
++
++  let order = [];
++  try {
++    order = JSON.parse(inv.section_order || '[]');
++  } catch {}
+   if (!Array.isArray(order) || !order.length) {
+-    order = ["hero","detalles","mensaje","galeria","ubicacion","rsvp","footer"]
++    order = [
++      'hero',
++      'detalles',
++      'mensaje',
++      'galeria',
++      'ubicacion',
++      'rsvp',
++      'footer',
++    ];
+   }
++
+   if ((registry || '').trim()) {
+     if (!order.includes('registry')) {
+-      const idx = order.indexOf('ubicacion')
+-      if (idx >= 0) order.splice(idx,0,'registry')
+-      else order.push('registry')
++      const idx = order.indexOf('ubicacion');
++      if (idx >= 0) order.splice(idx, 0, 'registry');
++      else order.push('registry');
+     }
+   } else {
+-    order = order.filter(s=>s!== 'registry')
++    order = order.filter((s) => s !== 'registry');
+   }
+-  await req.db.query('UPDATE invitations SET theme_json=?, section_order=? WHERE id=? AND user_id=?',[JSON.stringify(mergedTheme), JSON.stringify(order), invitation_id, req.session.uid])
+-  res.redirect('/panel/wizard')
+-})
++
++  await req.db.query(
++    'UPDATE invitations SET theme_json=?, section_order=? WHERE id=? AND user_id=?',
++    [JSON.stringify(mergedTheme), JSON.stringify(order), invitation_id, req.session.uid],
++  );
++
++  res.redirect('/panel/wizard');
++});
+ 
+ 
+ 
+ router.post('/wizard/theme', authed, async (req,res)=>{
+   const { invitation_id, theme_json } = req.body
+   let incoming = {}
+   try { incoming = JSON.parse(theme_json) } catch {}
+   const [[inv]] = await req.db.query('SELECT theme_json FROM invitations WHERE id=? AND user_id=?', [invitation_id, req.session.uid])
+   const current = (()=>{ try { return JSON.parse(inv.theme_json||'{}') } catch { return {} } })()
+   const merged = {
+     ...current,
+     ...incoming,
+     colors: {...(current.colors||{}), ...(incoming.colors||{})},
+     fonts:  {...(current.fonts||{}),  ...(incoming.fonts||{})},
+     media:  {...(current.media||{}),  ...(incoming.media||{})},
+      copy:   {...(current.copy||{}),   ...(incoming.copy||{})},
+     animations: {...(current.animations||{}), ...(incoming.animations||{})}
+   }
+   await req.db.query('UPDATE invitations SET theme_json=? WHERE id=? AND user_id=?', [JSON.stringify(merged), invitation_id, req.session.uid])
+   res.redirect('/panel')
+ })
+ 
+ 
+ router.post('/publish', authed, async (req,res)=>{
+   const { invitation_id } = req.body
+ 
+EOF
+)er_id=?', [invitation_id, req.session.uid])
   if(!inv) return res.status(404).send('Invitación no encontrada')
   if(inv.date_locked) return res.status(400).send('La fecha ya está bloqueada y no puede cambiarse')
   await req.db.query('UPDATE invitations SET date_iso=?, date_locked=1, slug_locked=1 WHERE id=? AND user_id=?', [date_iso, invitation_id, req.session.uid])
