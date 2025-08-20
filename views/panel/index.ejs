@@ -13,8 +13,8 @@
             <%= (inv.template_name || inv.template_key) %> · <%= new Date(inv.date_iso).toLocaleDateString('es-MX') %>
           </p>
           <div class="mt-3 flex gap-2">
-            <a class="btn btn-primary" href="/i/<%= inv.slug %>" target="_blank">Ver</a>
-            <a class="btn" href="/panel/editar/<%= inv.id %>">Editar</a>
+            <a class="btn btn-primary" href="/u/<%= inv.slug %>" target="_blank">Ver</a>
+            <a class="btn" href="/panel/wizard/<%= inv.id %>">Editar</a>
           </div>
         </article>
       <% }) %>
