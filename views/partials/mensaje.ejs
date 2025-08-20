@@ -1,5 +1,9 @@
-<% const anim = theme.animations?.mensaje || {}; const animClass = (anim.in || anim.out) ? `animate__animated ${anim.in?`animate__${anim.in}`:''} ${anim.out?`animate__${anim.out}`:''}` : '' %>
-<section class="py-12 bg-grid/40 <%= animClass %>">
+<%
+  const anim = theme.animations?.mensaje || {};
+  const animClass = anim.in ? `animate__animated animate__${anim.in}` : '';
+  const animOutAttr = anim.out ? `data-anim-out="${anim.out}"` : '';
+%>
+<section class="py-12 bg-grid/40 <%= animClass %>" <%- animOutAttr %>>
   <div class="container mx-auto px-5 max-w-3xl text-center">
     <h2 class="font-display text-3xl md:text-4xl">Nos encantará compartirlo contigo</h2>
     <p class="mt-4 text-[var(--ring)]"><%= theme.copy.intro %></p>

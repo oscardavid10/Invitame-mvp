@@ -1,5 +1,9 @@
-<% const anim = theme.animations?.rsvp || {}; const animClass = (anim.in || anim.out) ? `animate__animated ${anim.in?`animate__${anim.in}`:''} ${anim.out?`animate__${anim.out}`:''}` : '' %>
-<section id="rsvp" class="py-12 bg-grid/30 <%= animClass %>">
+<%
+  const anim = theme.animations?.rsvp || {};
+  const animClass = anim.in ? `animate__animated animate__${anim.in}` : '';
+  const animOutAttr = anim.out ? `data-anim-out="${anim.out}"` : '';
+%>
+<section id="rsvp" class="py-12 bg-grid/30 <%= animClass %>" <%- animOutAttr %>>
   <div class="container mx-auto px-5">
     <div class="max-w-2xl mx-auto card">
       <h3 class="font-display text-2xl">Confirmar asistencia</h3>

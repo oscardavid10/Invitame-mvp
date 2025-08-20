@@ -1,4 +1,8 @@
-<% const anim = theme.animations?.footer || {}; const animClass = (anim.in || anim.out) ? `animate__animated ${anim.in?`animate__${anim.in}`:''} ${anim.out?`animate__${anim.out}`:''}` : '' %>
-<footer class="py-10 text-center text-[var(--muted)] <%= animClass %>">
+<%
+  const anim = theme.animations?.footer || {};
+  const animClass = anim.in ? `animate__animated animate__${anim.in}` : '';
+  const animOutAttr = anim.out ? `data-anim-out="${anim.out}"` : '';
+%>
+<footer class="py-10 text-center text-[var(--muted)] <%= animClass %>" <%- animOutAttr %>>
   © <%= new Date().getFullYear() %> <%= data.title %>
 </footer>

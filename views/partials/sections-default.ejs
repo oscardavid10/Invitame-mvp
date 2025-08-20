@@ -9,7 +9,7 @@
   document.getElementById('estado').textContent = out.ok ? '¡Gracias! Te hemos registrado.' : (out.error||'Error')
   if(out.ok) form.reset();
  }
- function sendWhats(){
+function sendWhats(){
   const f = document.querySelector('#rsvp form');
   const d = Object.fromEntries(new FormData(f).entries());
   const lines = [
@@ -24,4 +24,16 @@
   const phone = '<%= (data.whatsapp_phone||"").replace(/[^+\\d]/g,"") %>'
   window.open(`https://wa.me/${phone}?text=${msg}`,'_blank')
  }
+
+ function triggerAnimOut(el){
+  if (typeof el === 'string') el = document.querySelector(el);
+  if (!el) return;
+  const out = el.dataset.animOut;
+  if (out) {
+    const animClasses = Array.from(el.classList).filter(c => c.startsWith('animate__'));
+    animClasses.forEach(c => el.classList.remove(c));
+    el.classList.add('animate__animated', `animate__${out}`);
+  }
+}
+window.triggerAnimOut = triggerAnimOut;
 </script>

@@ -6,9 +6,10 @@ const raw  = (meta.registry || '').trim();
 if (raw) {
   const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
     const anim = theme.animations?.registry || {};
-  const animClass = (anim.in || anim.out) ? `animate__animated ${anim.in?`animate__${anim.in}`:''} ${anim.out?`animate__${anim.out}`:''}` : '';
+ const animClass = anim.in ? `animate__animated animate__${anim.in}` : '';
+    const animOutAttr = anim.out ? `data-anim-out="${anim.out}"` : '';
 %>
-<section class="py-12 <%= animClass %>">
+<section class="py-12 <%= animClass %>" <%- animOutAttr %>>
   <div class="container mx-auto px-5 max-w-3xl">
     <h3 class="font-display text-2xl mb-3">Mesa de regalos</h3>
     <div class="grid sm:grid-cols-2 gap-3">
