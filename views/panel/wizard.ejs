@@ -1,6 +1,11 @@
 <section class="container mx-auto px-5 py-10 grid gap-6">
   <% const theme = (()=>{ try { return JSON.parse(inv.theme_json||'{}') } catch { return {} } })(); %>
   <div class="card">
+        <% if (plan) { %>
+      <div class="mb-3">
+        <span class="inline-block bg-indigo-600 text-white px-4 py-2 rounded font-bold"><%= (plan.name || plan.code) %> · $<%= plan.price_mxn %> MXN</span>
+      </div>
+    <% } %>
     <h3 class="text-lg font-bold mb-3">1) Plantilla</h3>
     <div class="flex gap-2 mb-3">
       <% cats.forEach(c=>{ %>

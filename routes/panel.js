@@ -35,15 +35,6 @@ router.get('/', authed, async (req,res)=>{
 })
 
 router.get('/wizard/:id?', authed, async (req,res)=>{
-  const plan = await getActivePlan(req)
-  const tier = plan?.template_scope || 'general'
-  const [templates] = await req.db.query(
-    tier === 'general'
-      ? 'SELECT * FROM templates WHERE tier IN ("general") ORDER BY category,id'
-      : tier === 'all'
-      ? 'SELECT * FROM templates WHERE tier IN ("general","all") ORDER BY category,id'
-      : 'SELECT * FROM templates ORDER BY category,id'
-  )
    let inv
   if (req.params.id) {
     ;[[inv]] = await req.db.query(
@@ -56,21 +47,25 @@ router.get('/wizard/:id?', authed, async (req,res)=>{
       [req.session.uid]
     )
   }
+    if (!inv) return res.redirect('/panel')
+  const [[plan]] = await req.db.query(
+    'SELECT p.* FROM orders o JOIN plans p ON p.id=o.plan_id WHERE o.id=? AND o.user_id=?',
+    [inv.order_id, req.session.uid]
+  )
+  const tier = plan?.template_scope || 'general'
+  const [templates] = await req.db.query(
+    tier === 'general'
+      ? 'SELECT * FROM templates WHERE tier IN ("general") ORDER BY category,id'
+      : tier === 'all'
+      ? 'SELECT * FROM templates WHERE tier IN ("general","all") ORDER BY category,id'
+      : 'SELECT * FROM templates ORDER BY category,id'
+  )
   const cats = [...new Set(templates.map(t=>t.category))]
    const theme = (()=>{ try { return JSON.parse(inv?.theme_json||'{}') } catch { return {} } })()
   res.render('panel/wizard', { templates, cats, inv, plan, theme })
 })
 
-// helper (puedes ponerlo en middleware)
-async function getActivePlan(req){
-  const [[row]] = await req.db.query(`
-    SELECT p.* FROM orders o
-    JOIN plans p ON p.id=o.plan_id
-    WHERE o.user_id=? AND o.status='paid'
-    ORDER BY o.paid_at DESC LIMIT 1
-  `, [req.session.uid])
-  return row || null
-}
+
 
 
 router.post('/wizard/sections', authed, async (req,res)=>{
