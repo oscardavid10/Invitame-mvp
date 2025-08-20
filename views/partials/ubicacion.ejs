@@ -8,8 +8,8 @@
     <% 
       const hasReception = !!(data.address && data.address.trim());
       const hasCeremony  = !!(data.ceremony_address && data.ceremony_address.trim());
-      const showReceptionMap = !!data.show_map;
-      const showCeremonyMap  = !!data.show_ceremony_map;
+      const showReceptionMap = !!(theme.meta?.show_map ?? data.show_map);
+      const showCeremonyMap  = !!(theme.meta?.show_ceremony_map ?? data.show_ceremony_map);
     %>
 
     <% if (hasCeremony) { %>

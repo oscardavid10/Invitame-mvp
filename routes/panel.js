@@ -139,6 +139,11 @@ router.get('/preview/:id', authed, async (req,res)=>{
   const [[inv]] = await req.db.query('SELECT * FROM invitations WHERE id=? AND user_id=?', [req.params.id, req.session.uid])
   if(!inv) return res.status(404).send('Invitación no encontrada')
   const theme = JSON.parse(inv.theme_json)
+  theme.meta = {
+    ...(theme.meta || {}),
+    show_map: theme.meta?.show_map ?? inv.show_map ?? false,
+    show_ceremony_map: theme.meta?.show_ceremony_map ?? inv.show_ceremony_map ?? false,
+  }
   const view = inv.template_key === 'elegant' ? 'templates/elegant' : 'templates/default'
   res.render(view, { data: inv, theme, hideNav: true })
 })

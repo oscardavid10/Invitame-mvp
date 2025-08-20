@@ -220,6 +220,8 @@ router.post('/site/crear/preview', async (req, res) => {
     copy:   { ...base.copy,  intro: pref.message || base.copy.intro },
     meta:   {
       ...(base.meta || {}),
+      show_map:       pref.show_map === 'on',
+      show_ceremony_map: pref.show_ceremony_map === 'on',
       registry:       pref.registry || '',
       music_url:      pref.music_url || '',
       music_autoplay: !!pref.music_autoplay
