@@ -65,8 +65,7 @@ router.get('/wizard/:id?', authed, async (req,res)=>{
       : 'SELECT * FROM templates ORDER BY category,id'
   )
   const cats = [...new Set(templates.map(t=>t.category))]
-const theme = (()=>{ try { return JSON.parse(inv?.theme_json||'{}') } catch { return {} } })()
-  res.render('panel/wizard', { templates, cats, inv, plan, theme })
+ res.render('panel/wizard', { templates, cats, inv, plan })
 })
 
 
