@@ -109,6 +109,7 @@ router.post('/wizard/slug', authed, async (req,res)=>{
   }
 })
 
+
 router.post('/wizard/details', authed, async (req,res)=>{
   const { invitation_id, venue, address, ceremony_venue, ceremony_address, show_map, show_ceremony_map, registry } = req.body
   const showMap = !!show_map
@@ -140,6 +141,7 @@ router.post('/wizard/details', authed, async (req,res)=>{
   await req.db.query('UPDATE invitations SET theme_json=?, section_order=? WHERE id=? AND user_id=?',[JSON.stringify(mergedTheme), JSON.stringify(order), invitation_id, req.session.uid])
   res.redirect('/panel/wizard')
 })
+
 
 
 router.post('/wizard/theme', authed, async (req,res)=>{

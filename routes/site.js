@@ -288,7 +288,7 @@ router.get('/site/success', async (req, res) => {
       const s = await stripe.checkout.sessions.retrieve(session_id)
       if (s.payment_status === 'paid') {
         const orderId = Number(s.client_reference_id)
-        const [[ord]] = await req.db.query('SELECT status, user_id FROM orders WHERE id=?', [orderId])
+        const [[ord]] = await req.db.query('SELECT o.*, p.allow_registry, p.allow_music FROM orders o JOIN plans p ON p.id=o.plan_id WHERE o.id=?', [orderId])
         if (ord && ord.status !== 'paid') {
           await req.db.query('UPDATE orders SET status="paid", paid_at=NOW() WHERE id=?', [orderId])
         }
@@ -299,15 +299,34 @@ router.get('/site/success', async (req, res) => {
           const date_iso     = s.metadata?.date_iso || new Date().toISOString()
           const venue        = s.metadata?.venue || 'Por definir'
           const address      = s.metadata?.address || 'Por definir'
+          const ceremony_venue   = s.metadata?.ceremony_venue || ''
+          const ceremony_address = s.metadata?.ceremony_address || ''
           const palette      = s.metadata?.palette || '{}'
+          const show_map     = s.metadata?.show_map === 'true'
+          const show_ceremony_map = s.metadata?.show_ceremony_map === 'true'
+          const dress_code   = s.metadata?.dress_code || ''
+          const message      = s.metadata?.message || ''
+          const registry     = s.metadata?.registry || ''
+          const music_url    = s.metadata?.music_url || ''
+          const music_autoplay = s.metadata?.music_autoplay === 'true'
 
           const [[tpl]] = await req.db.query('SELECT * FROM templates WHERE key_name=? LIMIT 1', [template_key])
           const base    = buildThemeFrom(tpl, palette, null)
-          const themeJson = JSON.stringify(base)
+          const theme   = {
+            ...base,
+            meta: { ...base.meta, show_map, show_ceremony_map, dress_code, registry, music_url, music_autoplay }
+          }
+          const themeJson = JSON.stringify(theme)
+
+          const secArr = ["hero","detalles","mensaje","galeria","ubicacion"]
+          if (ord.allow_registry && registry.trim()) secArr.push("registry")
+          if (ord.allow_music && music_url.trim()) secArr.push("music")
+          secArr.push("rsvp","footer")
+          const sectionOrder = JSON.stringify(secArr)
 
           await req.db.query(
-            'INSERT INTO invitations (user_id, order_id, template_key, slug, title, date_iso, venue, address, theme_json) VALUES (?,?,?,?,?,?,?,?,?)',
-            [ord.user_id, orderId, template_key, `evento-${ord.user_id}-${orderId}`, title, date_iso, venue, address, themeJson]
+            'INSERT INTO invitations (user_id, order_id, template_key, slug, title, date_iso, venue, address, ceremony_venue, ceremony_address, show_map, show_ceremony_map, theme_json, section_order, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            [ord.user_id, orderId, template_key, `evento-${ord.user_id}-${orderId}`, title, date_iso, venue, address, ceremony_venue, ceremony_address, show_map ? "on" : "", show_ceremony_map ? "on" : "", themeJson, sectionOrder, 'active']
           )
         }
       }

@@ -50,11 +50,14 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
         const date_iso = s.metadata?.date_iso || new Date().toISOString()
         const venue = s.metadata?.venue || 'Por definir'
         const address = s.metadata?.address || 'Por definir'
+        const ceremony_venue = s.metadata?.ceremony_venue || ''
+        const ceremony_address = s.metadata?.ceremony_address || ''
         const palette = s.metadata?.palette || '{}'
         const show_map = s.metadata?.show_map === 'true'
+        const show_ceremony_map = s.metadata?.show_ceremony_map === 'true'
         const dress_code = s.metadata?.dress_code || ''
         const message = s.metadata?.message || ''
-                const registry = s.metadata?.registry || ''
+        const registry = s.metadata?.registry || ''
         const music_url = s.metadata?.music_url || ''
         const music_autoplay = s.metadata?.music_autoplay === 'true'
 
@@ -68,7 +71,7 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
           ...base,
           colors: { ...base.colors, ...pal },
           copy:   { ...base.copy, intro: message || base.copy.intro },
-          meta:   { ...base.meta, show_map, dress_code, registry, music_url, music_autoplay }
+          meta:   { ...base.meta, show_map, show_ceremony_map, dress_code, registry, music_url, music_autoplay }
         }
         const themeJson = JSON.stringify(theme)
                 const secArr = ["hero","detalles","mensaje","galeria","ubicacion"]
@@ -79,8 +82,8 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
 
         // inserta invitación
         await req.db.query(
-          'INSERT INTO invitations (user_id, order_id, template_key, slug, title, date_iso, venue, address, theme_json, section_order, status) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
-          [order.user_id, order.id, template_key, `evento-${order.user_id}-${order.id}`, title, date_iso, venue, address, themeJson, sectionOrder, 'active']
+          'INSERT INTO invitations (user_id, order_id, template_key, slug, title, date_iso, venue, address, ceremony_venue, ceremony_address, show_map, show_ceremony_map, theme_json, section_order, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+          [order.user_id, order.id, template_key, `evento-${order.user_id}-${order.id}`, title, date_iso, venue, address, ceremony_venue, ceremony_address, show_map ? "on" : "", show_ceremony_map ? "on" : "", themeJson, sectionOrder, 'active']
         )
       }
     } catch (e) {
