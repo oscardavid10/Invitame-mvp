@@ -17,7 +17,6 @@ router.get('/', authed, async (req,res)=>{
   if (req.session.is_admin) return res.redirect('/admin'); // admins al dashboard de admin
 
   const [invitations] = await req.db.query(
-    "SELECT * FROM invitations WHERE user_id=? AND status='active' ORDER BY created_at DESC",
     `SELECT i.*, p.name AS plan_name, p.code AS plan_code, p.price_mxn AS plan_price_mxn
      FROM invitations i
      JOIN orders o ON o.id=i.order_id
