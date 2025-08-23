@@ -208,8 +208,12 @@ router.post('/site/crear/preview', async (req, res) => {
     fonts:{},
   };
   let base = fallbackBase;
-    try {
-    if (rawTheme) base = { ...fallbackBase, ...JSON.parse(rawTheme) };
+  
+  try {
+    if (rawTheme) {
+      const parsed = typeof rawTheme === 'string' ? JSON.parse(rawTheme) : rawTheme;
+      base = { ...fallbackBase, ...parsed };
+    }
   } catch {}
   base.media = { gallery: [], ...(base.media || {}) };
 
