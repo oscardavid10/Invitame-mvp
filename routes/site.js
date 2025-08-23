@@ -208,7 +208,10 @@ router.post('/site/crear/preview', async (req, res) => {
     fonts:{},
   };
   let base = fallbackBase;
-  try { if (rawTheme) base = JSON.parse(rawTheme); } catch {}
+    try {
+    if (rawTheme) base = { ...fallbackBase, ...JSON.parse(rawTheme) };
+  } catch {}
+  base.media = { gallery: [], ...(base.media || {}) };
 
 
   // Mezcla palette + mensaje
